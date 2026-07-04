@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PostSphere Content Toolkit</title>
+<style>
+  :root{
+    --bg:#0c0e13;
+    --panel:#161a21;
+    --panel-2:#1d222b;
+    --border:#2a3038;
+    --text:#e7e9ec;
+    --muted:#8b93a1;
+    --accent:#4fd1c5;
+    --accent-2:#7c9eff;
+    --accent-dim:#2f7d76;
+    --danger:#e57373;
+    --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1100px 500px at 15% -10%, rgba(79,209,197,.09), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(124,158,255,.08), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Nastaliq Urdu", Arial, sans-serif;
+    padding:28px 20px 0;
+    display:flex;
+    flex-direction:column;
+    min-height:100%;
+  }
+  .wrap{max-width:1100px;margin:0 auto;width:100%;display:flex;flex-direction:column;flex:1;}
+
+  header{margin-bottom:22px;flex-shrink:0;}
+  .brand-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .logo{
+    width:38px;height:38px;border-radius:10px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;color:#08211f;font-size:16px;letter-spacing:-.5px;
+    box-shadow:0 4px 16px rgba(79,209,197,.25);
+    flex-shrink:0;
+  }
+  h1{
+    font-size:23px;margin:0;letter-spacing:.2px;font-weight:700;
+    background:linear-gradient(90deg,#f2f4f6,#c9d4d2 70%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .tagline{color:var(--muted);margin:2px 0 0;font-size:12.5px;letter-spacing:.3px;}
+  header p.desc{color:var(--muted);margin:14px 0 0;font-size:14px;line-height:1.6;max-width:720px;}
+
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    height:520px;
+  }
+  @media (max-width:820px){ .grid{grid-template-columns:1fr; height:auto;} }
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    box-shadow:0 8px 24px rgba(0,0,0,.18);
+  }
+  .panel-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:11px 14px;
+    background:var(--panel-2);
+    border-bottom:1px solid var(--border);
+  }
+  .panel-head span{font-size:12.5px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;}
+
+  .toolbar{
+    display:flex;
+    gap:4px;
+    padding:8px;
+    background:var(--panel-2);
+    border-bottom:1px solid var(--border);
+    flex-wrap:wrap;
+  }
+  .toolbar button{
+    background:transparent;
+    border:1px solid transparent;
+    color:var(--text);
+    padding:6px 10px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:13px;
+    transition:background .15s ease, border-color .15s ease;
+  }
+  .toolbar button:hover{background:#252b35;border-color:var(--border);}
+  .toolbar button.active{background:var(--accent-dim);color:#fff;}
+  .toolbar .sep{width:1px;background:var(--border);margin:4px 4px;}
+
+  #editor{
+    flex:1;
+    min-height:0;
+    padding:16px;
+    outline:none;
+    font-size:15px;
+    line-height:1.7;
+    overflow-y:auto;
+    color:var(--text);
+  }
+  #editor, #editor *{
+    color:var(--text) !important;
+    background-color:transparent !important;
+  }
+  #editor a, #editor a *{
+    color:var(--accent) !important;
+  }
+  #editor h1,#editor h2,#editor h3{margin:0 0 10px;font-size:1.15em;}
+  #editor p{margin:0 0 12px;}
+  #editor a{color:var(--accent);}
+  #editor ul{margin:0 0 12px 20px;padding:0;}
+
+  #output{
+    flex:1;
+    min-height:0;
+    padding:16px;
+    font-family:var(--mono);
+    font-size:12.5px;
+    line-height:1.6;
+    color:#c9d1d9;
+    white-space:pre-wrap;
+    word-break:break-word;
+    overflow-y:auto;
+    background:#10131a;
+  }
+
+  .actions{
+    display:flex;
+    gap:10px;
+    padding:12px 14px;
+    border-bottom:1px solid var(--border);
+    background:var(--panel-2);
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .btn{
+    border:none;
+    padding:9px 16px;
+    border-radius:7px;
+    font-size:13.5px;
+    cursor:pointer;
+    font-weight:600;
+    transition:transform .1s ease, background .15s ease, filter .15s ease;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),#3fbdb0);color:#062b28;}
+  .btn-primary:hover{filter:brightness(1.08);}
+  .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+  .btn-ghost:hover{color:var(--text);border-color:#3a424e;}
+  .btn-danger{background:transparent;color:var(--danger);border:1px solid #4a2e2e;}
+  .btn-danger:hover{color:#ffb0b0;border-color:var(--danger);}
+  .copied{color:var(--accent);font-size:13px;margin-left:4px;align-self:center;opacity:0;transition:opacity .2s;}
+  .copied.show{opacity:1;}
+
+  .format-select{
+    background:var(--panel);
+    color:var(--text);
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:5px 8px;
+    font-size:12.5px;
+    cursor:pointer;
+  }
+  .format-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  /* ---- Slug generator section ---- */
+  .section-divider{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin:34px 0 18px;
+  }
+  .section-divider .line{flex:1;height:1px;background:var(--border);}
+  .section-divider span{
+    font-size:12px;
+    letter-spacing:.6px;
+    text-transform:uppercase;
+    color:var(--muted);
+    font-family:var(--mono);
+  }
+
+  .slug-panel{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:22px 22px 20px;
+    box-shadow:0 8px 24px rgba(0,0,0,.18);
+  }
+  .slug-panel h2{font-size:19px;margin:0 0 8px;color:var(--text);}
+  .slug-panel > p{color:var(--muted);margin:0 0 20px;font-size:14px;line-height:1.6;max-width:640px;}
+  .field-label{
+    font-size:12px;
+    font-weight:600;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.4px;
+    margin-bottom:6px;
+    display:block;
+  }
+  .slug-field{margin-bottom:16px;}
+  .slug-field input{
+    width:100%;
+    background:#10131a;
+    border:1px solid var(--border);
+    color:var(--text);
+    font-size:14px;
+    padding:11px 12px;
+    border-radius:8px;
+    outline:none;
+    font-family:inherit;
+    transition:border-color .15s ease;
+  }
+  .slug-field input:focus{border-color:var(--accent-dim);}
+  #slugOutput{
+    font-family:var(--mono);
+    color:var(--accent);
+  }
+  .slug-actions{display:flex;gap:10px;align-items:center;}
+
+  .md-standalone{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:18px;
+  }
+
+  footer{
+    margin-top:40px;
+    padding:20px 0 26px;
+    border-top:1px solid var(--border);
+    text-align:center;
+    color:var(--muted);
+    font-size:13px;
+    letter-spacing:.2px;
+  }
+  footer .heart{color:var(--danger);}
+  footer .brandname{color:var(--accent);font-weight:700;}
+  footer .madeby{color:var(--text);font-weight:600;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand-row">
+      <div class="brand">
+        <div class="logo">PS</div>
+        <div>
+          <h1>PostSphere Content Toolkit</h1>
+          <p class="tagline">Rich text → clean HTML &amp; Markdown, plus a quick slug generator</p>
+        </div>
+      </div>
+      <div class="md-standalone">
+        <button class="btn btn-primary" id="mdCopyBtn">Copy Markdown</button>
+        <span class="copied" id="mdCopiedMsg">Copied ✓</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="panel-head"><span>Rich Text Input</span></div>
+      <div class="toolbar">
+        <button data-cmd="bold" title="Bold"><b>B</b></button>
+        <button data-cmd="formatBlock" data-val="H2" title="Heading">H</button>
+        <button data-cmd="formatBlock" data-val="P" title="Paragraph">¶</button>
+        <div class="sep"></div>
+        <button data-cmd="insertUnorderedList" title="Bullet list">• List</button>
+        <div class="sep"></div>
+        <button id="linkBtn" title="Add link">🔗 Link</button>
+        <button id="imageBtn" title="Add image">🖼 Image</button>
+        <button data-cmd="removeFormat" title="Clear formatting">Clear</button>
+      </div>
+      <div id="editor" contenteditable="true">
+        
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <span>Converted HTML</span>
+        <div class="format-row">
+          <select id="formatSelect" class="format-select">
+            <option value="v1">Format 1 (current)</option>
+            <option value="v2">Format 2 (blockquote-wrapped)</option>
+            <option value="v3">Format 3 (simple/native HTML)</option>
+          </select>
+          <span class="preview-toggle" id="charCount">0 chars</span>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="copyBtn">Copy HTML</button>
+        <button class="btn btn-ghost" id="clearBtn">Editor Clear Karein</button>
+        <span class="copied" id="copiedMsg">Copied ✓</span>
+      </div>
+      <pre id="output"></pre>
+    </div>
+  </div>
+
+  <div class="section-divider"><div class="line"></div><span>Bonus Tool</span><div class="line"></div></div>
+
+  <div class="slug-panel">
+    <h2>Slug Generator</h2>
+    <p>Generate SEO-friendly URL slugs from text, also known as slugifying, to make your URLs more readable for your visitors and search engines. Works instantly as you type.</p>
+
+    <div class="slug-field">
+      <label class="field-label" for="slugInput">Input Text</label>
+      <input type="text" id="slugInput" placeholder="e.g. My Awesome Blog Post!">
+    </div>
+
+    <div class="slug-field">
+      <label class="field-label" for="slugOutput">Output Slug</label>
+      <input type="text" id="slugOutput" readonly placeholder="my-awesome-blog-post">
+    </div>
+
+    <div class="slug-actions">
+      <button class="btn btn-danger" id="slugClearBtn">Clear</button>
+      <button class="btn btn-ghost" id="slugCopyBtn">Copy</button>
+      <span class="copied" id="slugCopiedMsg">Copied ✓</span>
+    </div>
+  </div>
+
+  <footer>
+    <span class="brandname">PostSphere Content Toolkit</span> &middot;
+    Made <span class="heart">♥</span> by <span class="madeby">Sajid Sipra</span>
+  </footer>
+</div>
+
+<script>
+const editor = document.getElementById('editor');
+const output = document.getElementById('output');
+const charCount = document.getElementById('charCount');
+let currentMarkdown = '';
+
+// ---- Toolbar ----
+document.querySelectorAll('.toolbar button[data-cmd]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    editor.focus();
+    const cmd = btn.dataset.cmd;
+    const val = btn.dataset.val || null;
+    document.execCommand(cmd, false, val);
+    convertAll();
+  });
+});
+
+document.getElementById('linkBtn').addEventListener('click', ()=>{
+  const url = prompt('Link URL daalein (https:// ke saath):');
+  if(url){
+    editor.focus();
+    document.execCommand('createLink', false, url);
+    convertAll();
+  }
+});
+
+document.getElementById('imageBtn').addEventListener('click', ()=>{
+  const url = prompt('Image URL daalein (https:// ke saath):');
+  if(url){
+    editor.focus();
+    document.execCommand('insertImage', false, url);
+    convertAll();
+  }
+});
+
+document.getElementById('clearBtn').addEventListener('click', ()=>{
+  editor.innerHTML = '<p></p>';
+  convertAll();
+});
+
+document.getElementById('copyBtn').addEventListener('click', ()=>{
+  navigator.clipboard.writeText(output.textContent).then(()=>{
+    const msg = document.getElementById('copiedMsg');
+    msg.classList.add('show');
+    setTimeout(()=>msg.classList.remove('show'), 1400);
+  });
+});
+
+document.getElementById('mdCopyBtn').addEventListener('click', ()=>{
+  navigator.clipboard.writeText(currentMarkdown).then(()=>{
+    const msg = document.getElementById('mdCopiedMsg');
+    msg.classList.add('show');
+    setTimeout(()=>msg.classList.remove('show'), 1400);
+  });
+});
+
+// Prefer a real image URL over embedding a giant base64 blob. When copying an
+// image from a webpage, the clipboard/drag data usually also carries the page's
+// <img src="https://..."> URL - use that. Only fall back to asking the user for
+// a URL (never auto-embed base64) when no URL is available at all.
+function extractImageUrl(htmlData, uriList){
+  if(uriList){
+    const first = uriList.split('\n').map(s=>s.trim()).find(s=>/^https?:\/\//i.test(s));
+    if(first) return first;
+  }
+  if(htmlData){
+    const match = htmlData.match(/<img[^>]+src=["']((?:https?:)?\/\/[^"']+|https?:\/\/[^"']+)["']/i);
+    if(match) return match[1];
+  }
+  return null;
+}
+
+function promptForImageUrl(message){
+  const url = prompt(message);
+  if(url){
+    editor.focus();
+    document.execCommand('insertImage', false, url.trim());
+    convertAll();
+  }
+}
+
+editor.addEventListener('dragover', (e)=>{ e.preventDefault(); });
+editor.addEventListener('drop', (e)=>{
+  const dt = e.dataTransfer;
+  const htmlData = dt && dt.getData('text/html');
+  const uriList = dt && dt.getData('text/uri-list');
+  const urlFromDrop = extractImageUrl(htmlData, uriList);
+
+  if(urlFromDrop){
+    // real URL available - let default drop happen (or insert it ourselves for safety), then resync
+    e.preventDefault();
+    editor.focus();
+    document.execCommand('insertImage', false, urlFromDrop);
+    convertAll();
+    return;
+  }
+
+  const files = dt && dt.files;
+  const imageFiles = files ? Array.from(files).filter(f=>f.type.startsWith('image/')) : [];
+  if(imageFiles.length){
+    e.preventDefault();
+    promptForImageUrl('Yeh ek local image file hai, iski koi link nahi mili. Agar iski hosted URL hai to yahan daalein (warna Cancel karein):');
+    return;
+  }
+
+  // non-image drop (e.g. rich text/html) - let the browser handle it, then resync
+  setTimeout(convertAll, 0);
+  setTimeout(convertAll, 150);
+  setTimeout(convertAll, 500);
+});
+
+editor.addEventListener('input', convertAll);
+editor.addEventListener('keyup', convertAll);
+editor.addEventListener('paste', (e)=>{
+  const cd = e.clipboardData;
+  const htmlData = cd && cd.getData('text/html');
+  const uriList = cd && cd.getData('text/uri-list');
+  const urlFromPaste = extractImageUrl(htmlData, uriList);
+
+  if(urlFromPaste){
+    e.preventDefault();
+    editor.focus();
+    document.execCommand('insertImage', false, urlFromPaste);
+    convertAll();
+    return;
+  }
+
+  const items = cd && cd.items;
+  const imageItem = items ? Array.from(items).find(it=>it.type && it.type.startsWith('image/')) : null;
+  if(imageItem){
+    // raw clipboard image with no URL (e.g. a screenshot) - ask instead of embedding base64
+    e.preventDefault();
+    promptForImageUrl('Iss image ki clipboard mein koi link nahi mili. Agar iski hosted URL hai to yahan daalein (warna Cancel karein):');
+    return;
+  }
+
+  // force plain-ish paste so we don't inherit garbage styles, but keep basic structure
+  setTimeout(convertAll, 0);
+  setTimeout(convertAll, 150);
+});
+
+// Belt-and-braces sync: watch the editor for ANY change (toolbar bold/heading/list
+// clicks, image insert via button, pasted images, drag-drop, etc.) and reconvert.
+// This is more reliable than relying on specific key/paste events alone.
+const editorObserver = new MutationObserver(()=>{ convertAll(); });
+editorObserver.observe(editor, {
+  childList: true,
+  subtree: true,
+  characterData: true,
+  attributes: true,
+  attributeFilter: ['href', 'src', 'alt', 'style']
+});
+
+// Images can finish loading (and therefore have their final rendered state) after
+// insertion, and paste can attach large data-URI images slightly later - re-run
+// conversion once the image is actually loaded so it's never silently dropped.
+editor.addEventListener('load', (e)=>{
+  if(e.target && e.target.tagName === 'IMG') convertAll();
+}, true);
+
+// ---- Core conversion logic ----
+// Block-level tags that should become their own "paragraph" separated by <blockquote></blockquote>
+const BLOCK_TAGS = new Set(['P','DIV','H1','H2','H3','H4','H5','H6','LI','BLOCKQUOTE']);
+const HEADING_TAGS = new Set(['H1','H2','H3','H4','H5','H6']);
+const BOLD_TAGS = new Set(['B','STRONG']);
+
+function escapeAttr(str){
+  return str.replace(/"/g,'&quot;');
+}
+
+// Detect bold whether it comes from a <b>/<strong> tag, an inline style
+// (font-weight:bold / 600+), or a computed style (e.g. class-based bold
+// that survived a paste). Covers every way "already bold" text can show up.
+function isBoldTag(tag){
+  return BOLD_TAGS.has(tag);
+}
+function hasBoldStyle(el){
+  const styleAttr = el.getAttribute('style') || '';
+  if(/font-weight\s*:\s*(bold|bolder|[6-9]\d\d)/i.test(styleAttr)) return true;
+  try{
+    const fw = window.getComputedStyle(el).fontWeight;
+    const num = parseInt(fw, 10);
+    return fw === 'bold' || fw === 'bolder' || (!isNaN(num) && num >= 600);
+  }catch(e){
+    return false;
+  }
+}
+
+// Flatten to plain text only (used for anchor text / heading text) - no nested tags, no double-bold
+function flattenText(node){
+  let out = '';
+  node.childNodes.forEach(child=>{
+    if(child.nodeType === Node.TEXT_NODE){
+      out += child.textContent;
+    } else if(child.nodeType === Node.ELEMENT_NODE){
+      if(child.tagName === 'BR'){
+        out += ' ';
+      } else {
+        out += flattenText(child);
+      }
+    }
+  });
+  return out;
+}
+
+// Render inline content of a paragraph-level block: <a> becomes a link (bold link text),
+// text that was already bold (<b>/<strong>) in the source stays wrapped in <b>...</b>,
+// everything else (span/u/em/i etc) is unwrapped - only real headings, links, and
+// already-bold text end up bold.
+function renderInline(node, inheritedBold){
+  inheritedBold = inheritedBold || false;
+  let out = '';
+  node.childNodes.forEach(child=>{
+    if(child.nodeType === Node.TEXT_NODE){
+      out += child.textContent;
+    } else if(child.nodeType === Node.ELEMENT_NODE){
+      const tag = child.tagName;
+      if(tag === 'BR'){
+        out += ' '; // no <br> allowed, collapse to space
+      } else if(tag === 'A'){
+        const href = child.getAttribute('href') || '#';
+        const linkText = flattenText(child).trim();
+        if(linkText) out += `<a href="${escapeAttr(href)}"><b>${linkText}</b></a>`;
+      } else if(tag === 'IMG'){
+        const src = child.getAttribute('src') || '';
+        const alt = child.getAttribute('alt') || '';
+        if(src) out += `<img src="${escapeAttr(src)}" alt="${escapeAttr(alt)}">`;
+      } else {
+        // already bold in source (tag OR style) -> keep it bold in the output.
+        // If we're already inside a bold wrap, don't re-wrap - just recurse.
+        const boldHere = !inheritedBold && (isBoldTag(tag) || hasBoldStyle(child));
+        if(boldHere){
+          const inner = renderInline(child, true);
+          if(inner.trim()) out += `<b>${inner}</b>`;
+        } else {
+          out += renderInline(child, inheritedBold);
+        }
+      }
+    }
+  });
+  return out;
+}
+
+function hasBlockChild(node){
+  return Array.from(node.children).some(c=>{
+    const t = c.tagName;
+    return BLOCK_TAGS.has(t) || t === 'UL' || t === 'OL' || t === 'IMG';
+  });
+}
+
+function walkForBlocks(root, blocks){
+  root.childNodes.forEach(node=>{
+    if(node.nodeType === Node.TEXT_NODE){
+      const text = node.textContent.trim();
+      if(text) blocks.push({type:'para', text});
+      return;
+    }
+    if(node.nodeType !== Node.ELEMENT_NODE) return;
+
+    const tag = node.tagName;
+
+    if(tag === 'IMG'){
+      const src = node.getAttribute('src') || '';
+      const alt = node.getAttribute('alt') || '';
+      if(src) blocks.push({type:'img', src, alt});
+      return;
+    }
+
+    if(tag === 'UL' || tag === 'OL'){
+      // each LI becomes its own block
+      node.querySelectorAll(':scope > li').forEach(li=>{
+        const liBold = hasBoldStyle(li);
+        let content = renderInline(li, liBold).trim();
+        if(liBold && content) content = `<b>${content}</b>`;
+        if(content) blocks.push({type:'li', text:content});
+      });
+      return;
+    }
+
+    if(BLOCK_TAGS.has(tag)){
+      if(HEADING_TAGS.has(tag)){
+        // headings: bold the whole thing, plain text only (no nested tags inside a heading)
+        const content = flattenText(node).trim();
+        if(content) blocks.push({type:'heading', text:content});
+        return;
+      }
+      // if this container actually wraps other block-level elements (common with
+      // pasted content: a DIV/P holding nested H2/P/UL/IMG), recurse into its
+      // children instead of flattening everything into one paragraph.
+      if(hasBlockChild(node)){
+        walkForBlocks(node, blocks);
+        return;
+      }
+      // catch bold applied to the whole paragraph/div itself (e.g. a Q that's
+      // entirely bold but isn't a real heading), not just bold inside it
+      const blockBold = hasBoldStyle(node);
+      let content = renderInline(node, blockBold).trim();
+      if(blockBold && content) content = `<b>${content}</b>`;
+      if(content) blocks.push({type:'para', text:content});
+      return;
+    }
+
+    // Not a recognized block wrapper (e.g. a stray span/div wrapper at root) -> recurse
+    walkForBlocks(node, blocks);
+  });
+}
+
+// Format 1 (original): headings become <b>text</b>, every block separated by an empty <blockquote></blockquote>
+function renderV1(blocks){
+  const parts = blocks.map(b=>{
+    if(b.type === 'heading') return `<b>${b.text}</b>`;
+    if(b.type === 'img') return `<img src="${escapeAttr(b.src)}" alt="${escapeAttr(b.alt)}">`;
+    return b.text; // para or li rendered as plain inline content
+  });
+  return parts.join('\n<blockquote></blockquote>\n');
+}
+
+// Format 2: headings -> <blockquote><b>text</b></blockquote> (single wrap, no extra separator around it)
+// list items -> <blockquote>text</blockquote> (single wrap)
+// plain paragraphs -> joined to each other with an empty <blockquote></blockquote> separator only
+function renderV2(blocks){
+  let out = [];
+  blocks.forEach((b, i)=>{
+    if(b.type === 'heading'){
+      out.push(`<blockquote><b>${b.text}</b></blockquote>`);
+    } else if(b.type === 'li'){
+      out.push(`<blockquote>${b.text}</blockquote>`);
+    } else if(b.type === 'img'){
+      out.push(`<blockquote><img src="${escapeAttr(b.src)}" alt="${escapeAttr(b.alt)}"></blockquote>`);
+    } else {
+      // plain paragraph: if previous pushed item is also a plain paragraph, insert separator first
+      const prev = blocks[i-1];
+      if(prev && prev.type === 'para'){
+        out.push('<blockquote></blockquote>');
+      }
+      out.push(b.text);
+    }
+  });
+  return out.join('\n');
+}
+
+// ---- Format 3: simple/native HTML (uses the same reliable block parser as
+// Format 1/2, but emits real semantic tags: h1-h6, p, ul/ol/li, img) ----
+function escapeHtml(str){
+  return str
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+}
+
+// blocks[].text for para/li/heading already contains inline HTML (b/a/img) produced
+// by renderInline, EXCEPT headings which are stored as plain flattened text.
+function renderV3(blocks){
+  const out = [];
+  let i = 0;
+  while(i < blocks.length){
+    const b = blocks[i];
+    if(b.type === 'heading'){
+      out.push(`<h2>${escapeHtml(b.text)}</h2>`);
+      i++;
+    } else if(b.type === 'li'){
+      // group consecutive li's into a single <ul>
+      const items = [];
+      while(i < blocks.length && blocks[i].type === 'li'){
+        items.push(`  <li>${blocks[i].text}</li>`);
+        i++;
+      }
+      out.push(`<ul>\n${items.join('\n')}\n</ul>`);
+    } else if(b.type === 'img'){
+      out.push(`<p><img src="${escapeAttr(b.src)}" alt="${escapeAttr(b.alt)}"></p>`);
+      i++;
+    } else {
+      out.push(`<p>${b.text}</p>`);
+      i++;
+    }
+  }
+  return out.join('\n');
+}
+
+function convert(){
+  const blocks = [];
+  walkForBlocks(editor, blocks);
+  const format = document.getElementById('formatSelect').value;
+  let html;
+  if(format === 'v2') html = renderV2(blocks);
+  else if(format === 'v3') html = renderV3(blocks);
+  else html = renderV1(blocks);
+  output.textContent = html;
+  charCount.textContent = html.length + ' chars';
+}
+
+// ---- Markdown conversion (separate from the HTML converter above) ----
+function renderInlineMD(node, inheritedBold){
+  inheritedBold = inheritedBold || false;
+  let out = '';
+  node.childNodes.forEach(child=>{
+    if(child.nodeType === Node.TEXT_NODE){
+      out += child.textContent;
+    } else if(child.nodeType === Node.ELEMENT_NODE){
+      const tag = child.tagName;
+      if(tag === 'BR'){
+        out += ' ';
+      } else if(tag === 'A'){
+        const href = child.getAttribute('href') || '#';
+        const linkText = flattenText(child).trim();
+        if(linkText) out += `[${linkText}](${href})`;
+      } else if(tag === 'IMG'){
+        const src = child.getAttribute('src') || '';
+        const alt = child.getAttribute('alt') || '';
+        if(src) out += `![${alt}](${src})`;
+      } else {
+        const boldHere = !inheritedBold && (isBoldTag(tag) || hasBoldStyle(child));
+        if(boldHere){
+          const inner = renderInlineMD(child, true);
+          if(inner.trim()) out += `**${inner}**`;
+        } else {
+          out += renderInlineMD(child, inheritedBold);
+        }
+      }
+    }
+  });
+  return out;
+}
+
+function walkForBlocksMD(root, blocks){
+  root.childNodes.forEach(node=>{
+    if(node.nodeType === Node.TEXT_NODE){
+      const text = node.textContent.trim();
+      if(text) blocks.push({type:'para', text});
+      return;
+    }
+    if(node.nodeType !== Node.ELEMENT_NODE) return;
+
+    const tag = node.tagName;
+
+    if(tag === 'IMG'){
+      const src = node.getAttribute('src') || '';
+      const alt = node.getAttribute('alt') || '';
+      if(src) blocks.push({type:'img', src, alt});
+      return;
+    }
+
+    if(tag === 'UL' || tag === 'OL'){
+      node.querySelectorAll(':scope > li').forEach(li=>{
+        const liBold = hasBoldStyle(li);
+        let content = renderInlineMD(li, liBold).trim();
+        if(liBold && content) content = `**${content}**`;
+        if(content) blocks.push({type:'li', text:content});
+      });
+      return;
+    }
+
+    if(BLOCK_TAGS.has(tag)){
+      if(HEADING_TAGS.has(tag)){
+        const content = flattenText(node).trim();
+        const level = parseInt(tag.charAt(1), 10) || 2;
+        if(content) blocks.push({type:'heading', text:content, level});
+        return;
+      }
+      // recurse into containers that wrap other block-level elements instead of
+      // flattening nested headings/paragraphs into one blob (same fix as HTML parser)
+      if(hasBlockChild(node)){
+        walkForBlocksMD(node, blocks);
+        return;
+      }
+      const blockBold = hasBoldStyle(node);
+      let content = renderInlineMD(node, blockBold).trim();
+      if(blockBold && content) content = `**${content}**`;
+      if(content) blocks.push({type:'para', text:content});
+      return;
+    }
+
+    walkForBlocksMD(node, blocks);
+  });
+}
+
+function renderMarkdown(blocks){
+  const parts = [];
+  blocks.forEach((b, i)=>{
+    let line;
+    if(b.type === 'heading'){
+      line = '#'.repeat(Math.min(b.level || 2, 6)) + ' ' + b.text;
+    } else if(b.type === 'li'){
+      line = '- ' + b.text;
+    } else if(b.type === 'img'){
+      line = `![${b.alt}](${b.src})`;
+    } else {
+      line = b.text;
+    }
+    if(i === 0){
+      parts.push(line);
+    } else {
+      const prev = blocks[i-1];
+      const sep = (b.type === 'li' && prev.type === 'li') ? '\n' : '\n\n';
+      parts.push(sep + line);
+    }
+  });
+  return parts.join('');
+}
+
+function convertMD(){
+  const blocks = [];
+  walkForBlocksMD(editor, blocks);
+  currentMarkdown = renderMarkdown(blocks);
+}
+
+function convertAll(){
+  try{
+    convert();
+    convertMD();
+  }catch(err){
+    console.error('PostSphere conversion error:', err);
+  }
+}
+
+document.getElementById('formatSelect').addEventListener('change', convertAll);
+convertAll();
+
+// ---- Slug generator ----
+const slugInput = document.getElementById('slugInput');
+const slugOutput = document.getElementById('slugOutput');
+
+function slugify(text){
+  return text
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')   // strip non-word chars (keeps unicode letters/digits)
+    .replace(/[\s_]+/g, '-')    // spaces/underscores -> hyphen
+    .replace(/-+/g, '-')        // collapse multiple hyphens
+    .replace(/^-+|-+$/g, '');   // trim leading/trailing hyphens
+}
+
+slugInput.addEventListener('input', ()=>{
+  slugOutput.value = slugify(slugInput.value);
+});
+
+document.getElementById('slugClearBtn').addEventListener('click', ()=>{
+  slugInput.value = '';
+  slugOutput.value = '';
+  slugInput.focus();
+});
+
+document.getElementById('slugCopyBtn').addEventListener('click', ()=>{
+  if(!slugOutput.value) return;
+  navigator.clipboard.writeText(slugOutput.value).then(()=>{
+    const msg = document.getElementById('slugCopiedMsg');
+    msg.classList.add('show');
+    setTimeout(()=>msg.classList.remove('show'), 1400);
+  });
+});
+</script>
+</body>
+</html>
