@@ -1,65 +1,119 @@
 <!DOCTYPE html>
-<html lang="ur">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PostSphere Content Toolkit</title>
 <link rel="icon" type="image/jpeg" href="https://ibb.co/G4rsRTtN">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0c0e13;
-    --panel:#161a21;
-    --panel-2:#1d222b;
-    --border:#2a3038;
-    --text:#e7e9ec;
-    --muted:#8b93a1;
-    --accent:#4fd1c5;
-    --accent-2:#7c9eff;
-    --accent-dim:#2f7d76;
-    --danger:#e57373;
-    --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    /* Editorial-desk theme — ink, brass, and paper */
+    --bg:#0f1116;
+    --bg-grid: rgba(233,164,74,.035);
+    --panel:#171a21;
+    --panel-2:#1d212b;
+    --border:#2b303b;
+    --border-soft:#232733;
+    --text:#eceef2;
+    --muted:#8b93a3;
+    --accent:#e9a44a;       /* brass / ink-ribbon amber */
+    --accent-ink:#12100c;
+    --accent-2:#5fb8a8;     /* soft ledger teal */
+    --accent-2-ink:#08211c;
+    --danger:#e2775f;
+    --danger-bg:#3a241f;
+    --shadow: 0 10px 30px rgba(0,0,0,.28);
+    --font-display:'Fraunces', Georgia, serif;
+    --font-body:-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, "Noto Nastaliq Urdu", Arial, sans-serif;
+    --mono:'JetBrains Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  }
+  html[data-theme="light"]{
+    --bg:#eef1f0;
+    --bg-grid: rgba(18,16,12,.035);
+    --panel:#ffffff;
+    --panel-2:#f5f6f4;
+    --border:#dcdfdc;
+    --border-soft:#e6e8e5;
+    --text:#1b1e1c;
+    --muted:#6b7370;
+    --accent:#c07d2b;
+    --accent-ink:#fff7ec;
+    --accent-2:#2f7d70;
+    --accent-2-ink:#eafaf6;
+    --danger:#c04c34;
+    --danger-bg:#fbe9e4;
+    --shadow: 0 10px 26px rgba(30,30,25,.08);
   }
   *{box-sizing:border-box;}
   html,body{height:100%;}
   body{
     margin:0;
     background:
-      radial-gradient(1100px 500px at 15% -10%, rgba(79,209,197,.09), transparent 60%),
-      radial-gradient(900px 500px at 100% 0%, rgba(124,158,255,.08), transparent 55%),
+      radial-gradient(1100px 500px at 12% -10%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, color-mix(in srgb, var(--accent-2) 10%, transparent), transparent 55%),
       var(--bg);
     color:var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Nastaliq Urdu", Arial, sans-serif;
-    padding:28px 20px 0;
+    font-family: var(--font-body);
+    padding:30px 20px 0;
     display:flex;
     flex-direction:column;
     min-height:100%;
+    transition:background .25s ease, color .25s ease;
   }
-  .wrap{max-width:1100px;margin:0 auto;width:100%;display:flex;flex-direction:column;flex:1;}
+  .wrap{max-width:1120px;margin:0 auto;width:100%;display:flex;flex-direction:column;flex:1;}
 
-  header{margin-bottom:22px;flex-shrink:0;}
-  .brand-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
-  .brand{display:flex;align-items:center;gap:12px;}
+  header{margin-bottom:24px;flex-shrink:0;}
+  .brand-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:13px;}
   .logo{
-    width:38px;height:38px;border-radius:10px;
-    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    width:42px;height:42px;border-radius:50%;
+    background:
+      radial-gradient(circle at 32% 28%, color-mix(in srgb, var(--accent) 60%, white 10%), var(--accent) 55%, color-mix(in srgb, var(--accent) 70%, black 25%) 100%);
     display:flex;align-items:center;justify-content:center;
-    font-weight:800;color:#08211f;font-size:16px;letter-spacing:-.5px;
-    box-shadow:0 4px 16px rgba(79,209,197,.25);
+    font-family:var(--font-display);
+    font-weight:700;color:var(--accent-ink);font-size:15px;letter-spacing:-.5px;
+    box-shadow: var(--shadow), inset 0 0 0 2px color-mix(in srgb, var(--accent-ink) 15%, transparent);
     flex-shrink:0;
+    border:1px solid color-mix(in srgb, var(--accent) 40%, black 30%);
   }
   h1{
-    font-size:23px;margin:0;letter-spacing:.2px;font-weight:700;
-    background:linear-gradient(90deg,#f2f4f6,#c9d4d2 70%);
-    -webkit-background-clip:text;background-clip:text;color:transparent;
+    font-family:var(--font-display);
+    font-size:25px;margin:0;letter-spacing:.1px;font-weight:700;
+    color:var(--text);
   }
-  .tagline{color:var(--muted);margin:2px 0 0;font-size:12.5px;letter-spacing:.3px;}
-  header p.desc{color:var(--muted);margin:14px 0 0;font-size:14px;line-height:1.6;max-width:720px;}
+  .tagline{color:var(--muted);margin:3px 0 0;font-size:12.5px;letter-spacing:.3px;font-family:var(--mono);}
+
+  .header-actions{display:flex;align-items:center;gap:10px;}
+  .theme-toggle{
+    display:flex;align-items:center;gap:8px;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:6px 6px;
+    cursor:pointer;
+    color:var(--text);
+    font-size:13px;
+    transition:border-color .15s ease;
+  }
+  .theme-toggle:hover{border-color:var(--accent);}
+  .theme-toggle .dot{
+    width:26px;height:26px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--accent);
+    color:var(--accent-ink);
+    font-size:13px;
+    transition:transform .2s ease;
+  }
+  .theme-toggle span.label{padding-right:6px;color:var(--muted);font-family:var(--mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;}
 
   .grid{
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:18px;
-    height:520px;
+    height:560px;
   }
   @media (max-width:820px){ .grid{grid-template-columns:1fr; height:auto;} }
 
@@ -71,7 +125,7 @@
     display:flex;
     flex-direction:column;
     min-height:0;
-    box-shadow:0 8px 24px rgba(0,0,0,.18);
+    box-shadow: var(--shadow);
   }
   .panel-head{
     display:flex;
@@ -80,8 +134,20 @@
     padding:11px 14px;
     background:var(--panel-2);
     border-bottom:1px solid var(--border);
+    gap:10px;
+    flex-wrap:wrap;
   }
-  .panel-head span{font-size:12.5px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;}
+  .panel-head span.title{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.6px;text-transform:uppercase;font-family:var(--mono);}
+  .count-badge{
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--muted);
+    background:var(--panel);
+    border:1px solid var(--border-soft);
+    padding:3px 9px;
+    border-radius:999px;
+    white-space:nowrap;
+  }
 
   .toolbar{
     display:flex;
@@ -95,15 +161,15 @@
     background:transparent;
     border:1px solid transparent;
     color:var(--text);
-    padding:6px 10px;
+    padding:6px 9px;
     border-radius:6px;
     cursor:pointer;
     font-size:13px;
     transition:background .15s ease, border-color .15s ease;
   }
-  .toolbar button:hover{background:#252b35;border-color:var(--border);}
-  .toolbar button.active{background:var(--accent-dim);color:#fff;}
-  .toolbar .sep{width:1px;background:var(--border);margin:4px 4px;}
+  .toolbar button:hover{background:var(--border-soft);border-color:var(--border);}
+  .toolbar button.active{background:var(--accent);color:var(--accent-ink);}
+  .toolbar .sep{width:1px;background:var(--border);margin:4px 3px;}
 
   #editor{
     flex:1;
@@ -122,10 +188,14 @@
   #editor a, #editor a *{
     color:var(--accent) !important;
   }
-  #editor h1,#editor h2,#editor h3{margin:0 0 10px;font-size:1.15em;}
+  #editor img{max-width:100%;border-radius:6px;}
+  #editor h1,#editor h2,#editor h3{margin:0 0 10px;font-family:var(--font-display);}
+  #editor h1{font-size:1.5em;}
+  #editor h2{font-size:1.25em;}
+  #editor h3{font-size:1.1em;}
   #editor p{margin:0 0 12px;}
-  #editor a{color:var(--accent);}
-  #editor ul{margin:0 0 12px 20px;padding:0;}
+  #editor blockquote{margin:0 0 12px;padding:6px 14px;border-inline-start:3px solid var(--accent);color:var(--muted);}
+  #editor ul,#editor ol{margin:0 0 12px 20px;padding:0;}
 
   #output{
     flex:1;
@@ -134,12 +204,14 @@
     font-family:var(--mono);
     font-size:12.5px;
     line-height:1.6;
-    color:#c9d1d9;
+    color:var(--text);
     white-space:pre-wrap;
     word-break:break-word;
     overflow-y:auto;
-    background:#10131a;
+    background:var(--panel);
+    outline:none;
   }
+  #output:focus{background:color-mix(in srgb, var(--accent) 4%, var(--panel));}
 
   .actions{
     display:flex;
@@ -158,15 +230,16 @@
     cursor:pointer;
     font-weight:600;
     transition:transform .1s ease, background .15s ease, filter .15s ease;
+    font-family:var(--font-body);
   }
   .btn:active{transform:translateY(1px);}
-  .btn-primary{background:linear-gradient(135deg,var(--accent),#3fbdb0);color:#062b28;}
+  .btn-primary{background:linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 75%, black 10%));color:var(--accent-ink);}
   .btn-primary:hover{filter:brightness(1.08);}
   .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
-  .btn-ghost:hover{color:var(--text);border-color:#3a424e;}
-  .btn-danger{background:transparent;color:var(--danger);border:1px solid #4a2e2e;}
-  .btn-danger:hover{color:#ffb0b0;border-color:var(--danger);}
-  .copied{color:var(--accent);font-size:13px;margin-left:4px;align-self:center;opacity:0;transition:opacity .2s;}
+  .btn-ghost:hover{color:var(--text);border-color:var(--accent);}
+  .btn-danger{background:transparent;color:var(--danger);border:1px solid var(--danger-bg);}
+  .btn-danger:hover{color:var(--danger);border-color:var(--danger);background:var(--danger-bg);}
+  .copied{color:var(--accent-2);font-size:13px;margin-left:4px;align-self:center;opacity:0;transition:opacity .2s;font-weight:600;}
   .copied.show{opacity:1;}
 
   .format-select{
@@ -177,24 +250,28 @@
     padding:5px 8px;
     font-size:12.5px;
     cursor:pointer;
-  }
-  .format-row{
-    display:flex;
-    align-items:center;
-    gap:8px;
+    font-family:var(--mono);
   }
 
-  /* ---- Slug generator section ---- */
+  /* ---- Section divider — ledger double-rule ---- */
   .section-divider{
     display:flex;
     align-items:center;
     gap:14px;
-    margin:34px 0 18px;
+    margin:38px 0 18px;
   }
-  .section-divider .line{flex:1;height:1px;background:var(--border);}
+  .section-divider .line{
+    flex:1;height:5px;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(var(--border) 1px, transparent 1px);
+    background-size:100% 1px;
+    background-position:top, bottom;
+    background-repeat:no-repeat;
+  }
   .section-divider span{
-    font-size:12px;
-    letter-spacing:.6px;
+    font-size:11.5px;
+    letter-spacing:.7px;
     text-transform:uppercase;
     color:var(--muted);
     font-family:var(--mono);
@@ -205,23 +282,24 @@
     border:1px solid var(--border);
     border-radius:12px;
     padding:22px 22px 20px;
-    box-shadow:0 8px 24px rgba(0,0,0,.18);
+    box-shadow: var(--shadow);
   }
-  .slug-panel h2{font-size:19px;margin:0 0 8px;color:var(--text);}
+  .slug-panel h2{font-family:var(--font-display);font-size:20px;margin:0 0 8px;color:var(--text);}
   .slug-panel > p{color:var(--muted);margin:0 0 20px;font-size:14px;line-height:1.6;max-width:640px;}
   .field-label{
-    font-size:12px;
+    font-size:11.5px;
     font-weight:600;
     color:var(--muted);
     text-transform:uppercase;
-    letter-spacing:.4px;
+    letter-spacing:.5px;
     margin-bottom:6px;
     display:block;
+    font-family:var(--mono);
   }
   .slug-field{margin-bottom:16px;}
   .slug-field input{
     width:100%;
-    background:#10131a;
+    background:var(--panel-2);
     border:1px solid var(--border);
     color:var(--text);
     font-size:14px;
@@ -231,7 +309,7 @@
     font-family:inherit;
     transition:border-color .15s ease;
   }
-  .slug-field input:focus{border-color:var(--accent-dim);}
+  .slug-field input:focus{border-color:var(--accent);}
   #slugOutput{
     font-family:var(--mono);
     color:var(--accent);
@@ -242,11 +320,10 @@
     display:flex;
     align-items:center;
     gap:10px;
-    margin-top:18px;
   }
 
   footer{
-    margin-top:40px;
+    margin-top:42px;
     padding:20px 0 26px;
     border-top:1px solid var(--border);
     text-align:center;
@@ -255,8 +332,70 @@
     letter-spacing:.2px;
   }
   footer .heart{color:var(--danger);}
-  footer .brandname{color:var(--accent);font-weight:700;}
+  footer .brandname{color:var(--accent);font-weight:700;font-family:var(--font-display);}
   footer .madeby{color:var(--text);font-weight:600;}
+
+  /* ---- Link editor popup ---- */
+  .modal-overlay{
+    display:none;
+    position:fixed;inset:0;
+    background:rgba(0,0,0,.5);
+    align-items:center;justify-content:center;
+    z-index:1000;
+    padding:16px;
+  }
+  .modal-overlay.show{display:flex;}
+  .modal{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    box-shadow:var(--shadow);
+    width:100%;max-width:380px;
+    overflow:hidden;
+  }
+  .modal-head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 16px;
+    background:var(--panel-2);
+    border-bottom:1px solid var(--border);
+    font-size:13px;font-weight:700;
+    color:var(--text);
+  }
+  .modal-close{
+    background:transparent;border:none;color:var(--muted);
+    font-size:14px;cursor:pointer;padding:2px 6px;border-radius:6px;
+    transition:background .15s ease, color .15s ease;
+  }
+  .modal-close:hover{background:var(--border-soft);color:var(--text);}
+  .modal-body{padding:16px;}
+  .modal-body input[type="text"]{
+    width:100%;
+    background:var(--panel-2);
+    border:1px solid var(--border);
+    color:var(--text);
+    font-size:14px;
+    padding:10px 11px;
+    border-radius:8px;
+    outline:none;
+    font-family:inherit;
+    transition:border-color .15s ease;
+  }
+  .modal-body input[type="text"]:focus{border-color:var(--accent);}
+  .modal-checkbox{
+    display:flex;align-items:center;gap:8px;
+    margin-top:14px;
+    font-size:13px;
+    color:var(--text);
+    cursor:pointer;
+    user-select:none;
+  }
+  .modal-checkbox input{accent-color:var(--accent);width:15px;height:15px;cursor:pointer;}
+  .modal-actions{
+    display:flex;align-items:center;gap:8px;
+    padding:12px 16px;
+    border-top:1px solid var(--border);
+    background:var(--panel-2);
+  }
 </style>
 </head>
 <body>
@@ -267,53 +406,73 @@
         <div class="logo">PS</div>
         <div>
           <h1>PostSphere Content Toolkit</h1>
-          <p class="tagline">Rich text → clean HTML &amp; Markdown, plus a quick slug generator</p>
+          <p class="tagline">rich text → clean html &amp; markdown, plus a slug generator</p>
         </div>
       </div>
-      <div class="md-standalone">
-        <button class="btn btn-primary" id="mdCopyBtn">Copy Markdown</button>
-        <span class="copied" id="mdCopiedMsg">Copied ✓</span>
+      <div class="header-actions">
+        <div class="md-standalone">
+          <button class="btn btn-primary" id="mdCopyBtn">Copy Markdown</button>
+          <span class="copied" id="mdCopiedMsg">Copied ✓</span>
+        </div>
+        <button class="theme-toggle" id="themeToggle" title="Switch theme">
+          <span class="label" id="themeLabel">Dark</span>
+          <span class="dot" id="themeDot">🌙</span>
+        </button>
       </div>
     </div>
   </header>
 
   <div class="grid">
     <div class="panel">
-      <div class="panel-head"><span>Rich Text Input</span></div>
+      <div class="panel-head">
+        <span class="title">Rich Text Input</span>
+        <span class="count-badge" id="richCount">0 words · 0 chars</span>
+      </div>
       <div class="toolbar">
         <button data-cmd="bold" title="Bold"><b>B</b></button>
-        <button data-cmd="formatBlock" data-val="H2" title="Heading">H</button>
+        <button data-cmd="italic" title="Italic"><i>I</i></button>
+        <button data-cmd="underline" title="Underline"><u>U</u></button>
+        <div class="sep"></div>
+        <button data-cmd="formatBlock" data-val="H1" title="Heading 1">H1</button>
+        <button data-cmd="formatBlock" data-val="H2" title="Heading 2">H2</button>
+        <button data-cmd="formatBlock" data-val="H3" title="Heading 3">H3</button>
         <button data-cmd="formatBlock" data-val="P" title="Paragraph">¶</button>
         <div class="sep"></div>
         <button data-cmd="insertUnorderedList" title="Bullet list">• List</button>
+        <button data-cmd="insertOrderedList" title="Numbered list">1. List</button>
+        <button data-cmd="formatBlock" data-val="BLOCKQUOTE" title="Quote">" Quote</button>
         <div class="sep"></div>
-        <button id="linkBtn" title="Add link">🔗 Link</button>
+        <button id="linkBtn" title="Add or edit link">🔗 Link</button>
+        <button id="unlinkBtn" title="Remove link">🔗✕ Unlink</button>
         <button id="imageBtn" title="Add image">🖼 Image</button>
+        <div class="sep"></div>
+        <button data-cmd="undo" title="Undo">↺</button>
+        <button data-cmd="redo" title="Redo">↻</button>
         <button data-cmd="removeFormat" title="Clear formatting">Clear</button>
       </div>
       <div id="editor" contenteditable="true">
-        
+
       </div>
+      <input type="file" id="imageFileInput" accept="image/*" style="display:none">
     </div>
 
     <div class="panel">
       <div class="panel-head">
-        <span>Converted HTML</span>
-        <div class="format-row">
-          <select id="formatSelect" class="format-select">
-            <option value="v1">Format 1 (current)</option>
-            <option value="v2">Format 2 (blockquote-wrapped)</option>
-            <option value="v3">Format 3 (simple/native HTML)</option>
-          </select>
-          <span class="preview-toggle" id="charCount">0 chars</span>
-        </div>
+        <span class="title">Converted HTML</span>
+        <select id="formatSelect" class="format-select">
+          <option value="v1">Format 1 (current)</option>
+          <option value="v2">Format 2 (blockquote-wrapped)</option>
+          <option value="v3">Format 3 (dash blockquote)</option>
+          <option value="v4">Format 4 (simple/native HTML)</option>
+        </select>
       </div>
       <div class="actions">
         <button class="btn btn-primary" id="copyBtn">Copy HTML</button>
+        <button class="btn btn-ghost" id="resyncBtn">↺ Resync from Rich Text</button>
         <button class="btn btn-ghost" id="clearBtn">Clear Editor</button>
         <span class="copied" id="copiedMsg">Copied ✓</span>
       </div>
-      <pre id="output"></pre>
+      <div id="output" contenteditable="true" spellcheck="false"></div>
     </div>
   </div>
 
@@ -346,11 +505,54 @@
   </footer>
 </div>
 
+<div class="modal-overlay" id="linkModalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <span id="linkModalTitle">Insert Link</span>
+      <button class="modal-close" id="linkModalClose" title="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <label class="field-label" for="linkUrlInput">URL</label>
+      <input type="text" id="linkUrlInput" placeholder="https://example.com" autocomplete="off">
+      <label class="modal-checkbox" for="linkNewTabInput">
+        <input type="checkbox" id="linkNewTabInput">
+        Open in new tab
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="linkModalRemove">Remove Link</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-ghost" id="linkModalCancel">Cancel</button>
+      <button class="btn btn-primary" id="linkModalApply">Apply</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const editor = document.getElementById('editor');
 const output = document.getElementById('output');
-const charCount = document.getElementById('charCount');
 let currentMarkdown = '';
+let outputLocked = false; // true once the user hand-edits the Converted HTML pane
+
+// ---- Theme toggle ----
+const themeToggle = document.getElementById('themeToggle');
+const themeLabel = document.getElementById('themeLabel');
+const themeDot = document.getElementById('themeDot');
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  if(theme === 'light'){
+    themeLabel.textContent = 'Light';
+    themeDot.textContent = '☀️';
+  } else {
+    themeLabel.textContent = 'Dark';
+    themeDot.textContent = '🌙';
+  }
+}
+themeToggle.addEventListener('click', ()=>{
+  const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  applyTheme(current === 'light' ? 'dark' : 'light');
+});
+applyTheme('dark');
 
 // ---- Toolbar ----
 document.querySelectorAll('.toolbar button[data-cmd]').forEach(btn=>{
@@ -363,22 +565,248 @@ document.querySelectorAll('.toolbar button[data-cmd]').forEach(btn=>{
   });
 });
 
-document.getElementById('linkBtn').addEventListener('click', ()=>{
-  const url = prompt('Link URL daalein (https:// ke saath):');
-  if(url){
-    editor.focus();
+// ---- Link insert / edit ----
+function getSelectedAnchor(){
+  const sel = window.getSelection();
+  if(!sel || !sel.rangeCount) return null;
+  let node = sel.getRangeAt(0).startContainer;
+  if(node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+  while(node && node !== editor){
+    if(node.tagName === 'A') return node;
+    node = node.parentNode;
+  }
+  return null;
+}
+
+// Link popup — WordPress-style: a URL field plus an "open in new tab" checkbox,
+// instead of native browser prompt()/confirm() dialogs.
+const linkModalOverlay = document.getElementById('linkModalOverlay');
+const linkModalTitle = document.getElementById('linkModalTitle');
+const linkUrlInput = document.getElementById('linkUrlInput');
+const linkNewTabInput = document.getElementById('linkNewTabInput');
+const linkModalRemove = document.getElementById('linkModalRemove');
+let savedRange = null;
+let linkModalAnchor = null;
+
+function saveSelection(){
+  const sel = window.getSelection();
+  if(sel && sel.rangeCount) savedRange = sel.getRangeAt(0).cloneRange();
+}
+function restoreSelection(){
+  if(!savedRange) return;
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(savedRange);
+}
+
+function openLinkModal(){
+  editor.focus();
+  saveSelection();
+  linkModalAnchor = getSelectedAnchor();
+  linkModalTitle.textContent = linkModalAnchor ? 'Edit Link' : 'Insert Link';
+  linkUrlInput.value = linkModalAnchor ? (linkModalAnchor.getAttribute('href') || '') : '';
+  linkNewTabInput.checked = linkModalAnchor ? linkModalAnchor.getAttribute('target') === '_blank' : false;
+  linkModalRemove.style.display = linkModalAnchor ? '' : 'none';
+  linkModalOverlay.classList.add('show');
+  setTimeout(()=>{ linkUrlInput.focus(); linkUrlInput.select(); }, 0);
+}
+
+function closeLinkModal(){
+  linkModalOverlay.classList.remove('show');
+  linkModalAnchor = null;
+  savedRange = null;
+}
+
+document.getElementById('linkBtn').addEventListener('click', openLinkModal);
+document.getElementById('linkModalClose').addEventListener('click', closeLinkModal);
+document.getElementById('linkModalCancel').addEventListener('click', closeLinkModal);
+linkModalOverlay.addEventListener('click', (e)=>{ if(e.target === linkModalOverlay) closeLinkModal(); });
+
+linkUrlInput.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){ e.preventDefault(); document.getElementById('linkModalApply').click(); }
+  else if(e.key === 'Escape'){ e.preventDefault(); closeLinkModal(); }
+});
+
+linkModalRemove.addEventListener('click', ()=>{
+  restoreSelection();
+  const existing = linkModalAnchor || getSelectedAnchor();
+  if(existing){
+    const text = existing.textContent;
+    existing.replaceWith(document.createTextNode(text));
+  }
+  convertAll();
+  closeLinkModal();
+});
+
+document.getElementById('linkModalApply').addEventListener('click', ()=>{
+  const url = linkUrlInput.value.trim();
+  if(!url){ linkUrlInput.focus(); return; }
+
+  editor.focus();
+  restoreSelection();
+
+  let anchors;
+  if(linkModalAnchor){
+    linkModalAnchor.setAttribute('href', url);
+    anchors = [linkModalAnchor];
+  } else {
     document.execCommand('createLink', false, url);
-    convertAll();
+    anchors = Array.from(editor.querySelectorAll('a[href="' + url.replace(/"/g,'') + '"]'));
+  }
+
+  anchors.forEach(a=>{
+    if(linkNewTabInput.checked){
+      a.setAttribute('target', '_blank');
+      a.setAttribute('rel', 'noopener noreferrer');
+    } else {
+      a.removeAttribute('target');
+      a.removeAttribute('rel');
+    }
+  });
+
+  convertAll();
+  closeLinkModal();
+});
+
+document.getElementById('unlinkBtn').addEventListener('click', ()=>{
+  editor.focus();
+  const existing = getSelectedAnchor();
+  if(existing){
+    const text = existing.textContent;
+    existing.replaceWith(document.createTextNode(text));
+  } else {
+    document.execCommand('unlink');
+  }
+  convertAll();
+});
+
+// ---- Image insert (URL, or upload-from-device with automatic compression) ----
+const imageFileInput = document.getElementById('imageFileInput');
+
+document.getElementById('imageBtn').addEventListener('click', ()=>{
+  const useUrl = confirm('Add image from a URL?\n\nOK = Enter a URL\nCancel = Upload from device');
+  if(useUrl){
+    const url = prompt('Enter image URL (https://...):');
+    if(url){
+      editor.focus();
+      document.execCommand('insertImage', false, url.trim());
+      convertAll();
+    }
+  } else {
+    imageFileInput.click();
   }
 });
 
-document.getElementById('imageBtn').addEventListener('click', ()=>{
-  const url = prompt('Image URL daalein (https:// ke saath):');
-  if(url){
-    editor.focus();
-    document.execCommand('insertImage', false, url);
-    convertAll();
+imageFileInput.addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(file) compressAndInsertImage(file);
+  e.target.value = '';
+});
+
+// Compress any image (File, data: URI, or remote URL as a last resort) down to a
+// reasonable max dimension + JPEG quality before inserting, so we never dump a
+// giant raw base64 blob into the output.
+function compressAndInsertImageSrc(src, maxDim, quality){
+  maxDim = maxDim || 1280;
+  quality = quality || 0.72;
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = ()=>{
+    try{
+      let w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+      if(w > maxDim || h > maxDim){
+        const scale = maxDim / Math.max(w, h);
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', quality);
+      editor.focus();
+      document.execCommand('insertImage', false, dataUrl);
+      convertAll();
+    }catch(err){
+      console.error('Image compress error:', err);
+      editor.focus();
+      document.execCommand('insertImage', false, src);
+      convertAll();
+    }
+  };
+  img.onerror = ()=>{
+    const manualUrl = prompt('This image could not be processed. If you have a hosted URL for it, enter it here (or press Cancel):');
+    if(manualUrl){
+      editor.focus();
+      document.execCommand('insertImage', false, manualUrl.trim());
+      convertAll();
+    }
+  };
+  img.src = src;
+}
+
+function compressAndInsertImage(file, maxDim, quality){
+  const reader = new FileReader();
+  reader.onload = (ev)=> compressAndInsertImageSrc(ev.target.result, maxDim, quality);
+  reader.onerror = ()=> alert('Could not read the file.');
+  reader.readAsDataURL(file);
+}
+
+// Only images that already live at a real hosted URL (https://...) are kept.
+// Anything local — a base64/data: image, a raw clipboard screenshot, or a
+// dragged file with no URL of its own — is dropped entirely rather than being
+// embedded as a giant blob of code. This is what lets a Google Docs paste (which
+// often carries a large inline image alongside real text) keep all of its text
+// and formatting instead of losing everything but that one image.
+function sanitizeHtmlForInsert(html){
+  const container = document.createElement('div');
+  container.innerHTML = html;
+  container.querySelectorAll('img').forEach(img=>{
+    const src = img.getAttribute('src') || '';
+    if(!/^https?:\/\//i.test(src)) img.remove();
+  });
+  return container.innerHTML;
+}
+
+function insertSanitizedHtml(html){
+  editor.focus();
+  document.execCommand('insertHTML', false, sanitizeHtmlForInsert(html));
+  convertAll();
+}
+
+editor.addEventListener('dragover', (e)=>{ e.preventDefault(); });
+editor.addEventListener('drop', (e)=>{
+  const dt = e.dataTransfer;
+  const htmlData = dt && dt.getData('text/html');
+  const uriList = dt && dt.getData('text/uri-list');
+
+  if(htmlData){
+    e.preventDefault();
+    insertSanitizedHtml(htmlData);
+    return;
   }
+
+  const urlFromDrop = uriList ? uriList.split('\n').map(s=>s.trim()).find(s=>/^https?:\/\//i.test(s)) : null;
+  if(urlFromDrop){
+    e.preventDefault();
+    editor.focus();
+    document.execCommand('insertImage', false, urlFromDrop);
+    convertAll();
+    return;
+  }
+
+  // A dragged local file has no hosted URL, so it's ignored rather than embedded.
+  const files = dt && dt.files;
+  const hasImageFile = files ? Array.from(files).some(f=>f.type.startsWith('image/')) : false;
+  if(hasImageFile){
+    e.preventDefault();
+    setTimeout(convertAll, 0);
+    return;
+  }
+
+  setTimeout(convertAll, 0);
+  setTimeout(convertAll, 150);
+  setTimeout(convertAll, 500);
 });
 
 document.getElementById('clearBtn').addEventListener('click', ()=>{
@@ -402,187 +830,180 @@ document.getElementById('mdCopyBtn').addEventListener('click', ()=>{
   });
 });
 
-// Prefer a real image URL over embedding a giant base64 blob. When copying an
-// image from a webpage, the clipboard/drag data usually also carries the page's
-// <img src="https://..."> URL - use that. Only fall back to asking the user for
-// a URL (never auto-embed base64) when no URL is available at all.
-function extractImageUrl(htmlData, uriList){
-  if(uriList){
-    const first = uriList.split('\n').map(s=>s.trim()).find(s=>/^https?:\/\//i.test(s));
-    if(first) return first;
-  }
-  if(htmlData){
-    const match = htmlData.match(/<img[^>]+src=["']((?:https?:)?\/\/[^"']+|https?:\/\/[^"']+)["']/i);
-    if(match) return match[1];
-  }
-  return null;
-}
-
-function promptForImageUrl(message){
-  const url = prompt(message);
-  if(url){
-    editor.focus();
-    document.execCommand('insertImage', false, url.trim());
-    convertAll();
-  }
-}
-
-editor.addEventListener('dragover', (e)=>{ e.preventDefault(); });
-editor.addEventListener('drop', (e)=>{
-  const dt = e.dataTransfer;
-  const htmlData = dt && dt.getData('text/html');
-  const uriList = dt && dt.getData('text/uri-list');
-  const urlFromDrop = extractImageUrl(htmlData, uriList);
-
-  if(urlFromDrop){
-    // real URL available - let default drop happen (or insert it ourselves for safety), then resync
-    e.preventDefault();
-    editor.focus();
-    document.execCommand('insertImage', false, urlFromDrop);
-    convertAll();
-    return;
-  }
-
-  const files = dt && dt.files;
-  const imageFiles = files ? Array.from(files).filter(f=>f.type.startsWith('image/')) : [];
-  if(imageFiles.length){
-    e.preventDefault();
-    promptForImageUrl('Yeh ek local image file hai, iski koi link nahi mili. Agar iski hosted URL hai to yahan daalein (warna Cancel karein):');
-    return;
-  }
-
-  // non-image drop (e.g. rich text/html) - let the browser handle it, then resync
-  setTimeout(convertAll, 0);
-  setTimeout(convertAll, 150);
-  setTimeout(convertAll, 500);
+document.getElementById('resyncBtn').addEventListener('click', ()=>{
+  outputLocked = false;
+  convertAll();
 });
+
+// Editing the output pane by hand pauses auto-sync until the user hits Resync
+// (or picks a different format, which forces a fresh conversion).
+output.addEventListener('input', ()=>{ outputLocked = true; });
 
 editor.addEventListener('input', convertAll);
 editor.addEventListener('keyup', convertAll);
 editor.addEventListener('paste', (e)=>{
   const cd = e.clipboardData;
   const htmlData = cd && cd.getData('text/html');
-  const uriList = cd && cd.getData('text/uri-list');
-  const urlFromPaste = extractImageUrl(htmlData, uriList);
 
-  if(urlFromPaste){
+  if(htmlData){
+    // Handles rich paste from Google Docs and similar sources: keeps all text and
+    // formatting, and keeps any image that has a real hosted URL, but strips out
+    // local/base64 images so they don't swallow the rest of the content.
     e.preventDefault();
-    editor.focus();
-    document.execCommand('insertImage', false, urlFromPaste);
-    convertAll();
+    insertSanitizedHtml(htmlData);
     return;
   }
 
   const items = cd && cd.items;
   const imageItem = items ? Array.from(items).find(it=>it.type && it.type.startsWith('image/')) : null;
   if(imageItem){
-    // raw clipboard image with no URL (e.g. a screenshot) - ask instead of embedding base64
+    // Raw clipboard image with no hosted URL (e.g. a screenshot) — ignored rather than embedded.
     e.preventDefault();
-    promptForImageUrl('Iss image ki clipboard mein koi link nahi mili. Agar iski hosted URL hai to yahan daalein (warna Cancel karein):');
+    setTimeout(convertAll, 0);
     return;
   }
 
-  // force plain-ish paste so we don't inherit garbage styles, but keep basic structure
   setTimeout(convertAll, 0);
   setTimeout(convertAll, 150);
 });
 
 // Belt-and-braces sync: watch the editor for ANY change (toolbar bold/heading/list
 // clicks, image insert via button, pasted images, drag-drop, etc.) and reconvert.
-// This is more reliable than relying on specific key/paste events alone.
 const editorObserver = new MutationObserver(()=>{ convertAll(); });
 editorObserver.observe(editor, {
   childList: true,
   subtree: true,
   characterData: true,
   attributes: true,
-  attributeFilter: ['href', 'src', 'alt', 'style']
+  attributeFilter: ['href', 'src', 'alt', 'style', 'target', 'rel']
 });
 
-// Images can finish loading (and therefore have their final rendered state) after
-// insertion, and paste can attach large data-URI images slightly later - re-run
-// conversion once the image is actually loaded so it's never silently dropped.
 editor.addEventListener('load', (e)=>{
   if(e.target && e.target.tagName === 'IMG') convertAll();
 }, true);
 
 // ---- Core conversion logic ----
-// Block-level tags that should become their own "paragraph" separated by <blockquote></blockquote>
 const BLOCK_TAGS = new Set(['P','DIV','H1','H2','H3','H4','H5','H6','LI','BLOCKQUOTE']);
 const HEADING_TAGS = new Set(['H1','H2','H3','H4','H5','H6']);
 const BOLD_TAGS = new Set(['B','STRONG']);
+const ITALIC_TAGS = new Set(['I','EM']);
+const UNDERLINE_TAGS = new Set(['U']);
 
 function escapeAttr(str){
   return str.replace(/"/g,'&quot;');
 }
 
-// Detect bold whether it comes from a <b>/<strong> tag, an inline style
-// (font-weight:bold / 600+), or a computed style (e.g. class-based bold
-// that survived a paste). Covers every way "already bold" text can show up.
-function isBoldTag(tag){
-  return BOLD_TAGS.has(tag);
+function tagImpliesStyle(tag, type){
+  if(type === 'bold') return BOLD_TAGS.has(tag);
+  if(type === 'italic') return ITALIC_TAGS.has(tag);
+  if(type === 'underline') return UNDERLINE_TAGS.has(tag);
+  return false;
 }
-function hasBoldStyle(el){
+
+// Detect a style whether it comes from a semantic tag (<b>, <i>, <u>...), an inline
+// style (font-weight:bold, font-style:italic, text-decoration:underline), or a
+// computed style (e.g. class-based bold that survived a paste).
+function hasStyleFlag(el, type){
   const styleAttr = el.getAttribute('style') || '';
-  if(/font-weight\s*:\s*(bold|bolder|[6-9]\d\d)/i.test(styleAttr)) return true;
+  if(type === 'bold' && /font-weight\s*:\s*(bold|bolder|[6-9]\d\d)/i.test(styleAttr)) return true;
+  if(type === 'italic' && /font-style\s*:\s*italic/i.test(styleAttr)) return true;
+  if(type === 'underline' && /text-decoration[^;]*underline/i.test(styleAttr)) return true;
   try{
-    const fw = window.getComputedStyle(el).fontWeight;
-    const num = parseInt(fw, 10);
-    return fw === 'bold' || fw === 'bolder' || (!isNaN(num) && num >= 600);
+    const cs = window.getComputedStyle(el);
+    if(type === 'bold'){
+      const fw = cs.fontWeight;
+      const num = parseInt(fw, 10);
+      return fw === 'bold' || fw === 'bolder' || (!isNaN(num) && num >= 600);
+    }
+    if(type === 'italic') return cs.fontStyle === 'italic';
+    if(type === 'underline') return (cs.textDecorationLine || cs.textDecoration || '').indexOf('underline') !== -1;
   }catch(e){
     return false;
   }
+  return false;
 }
 
-// Flatten to plain text only (used for anchor text / heading text) - no nested tags, no double-bold
-function flattenText(node){
+// Light escaping so literal backslash/backtick/asterisk/underscore in the user's own
+// text don't get misread as Markdown emphasis/code by whatever renders the output.
+function escapeMdText(text){
+  return text.replace(/([`*_\\])/g, '\\$1');
+}
+function escapeMdLeading(line){
+  return line.replace(/^(\s*)([#\-*+>]|\d+\.)(\s)/, function(m,p1,p2,p3){ return p1 + '\\' + p2 + p3; });
+}
+
+// Flatten to plain text only (used for anchor text / headings) — no nested tags.
+function flattenText(node, escapeMd){
   let out = '';
   node.childNodes.forEach(child=>{
     if(child.nodeType === Node.TEXT_NODE){
-      out += child.textContent;
+      out += escapeMd ? escapeMdText(child.textContent) : child.textContent;
     } else if(child.nodeType === Node.ELEMENT_NODE){
       if(child.tagName === 'BR'){
         out += ' ';
       } else {
-        out += flattenText(child);
+        out += flattenText(child, escapeMd);
       }
     }
   });
   return out;
 }
 
-// Render inline content of a paragraph-level block: <a> becomes a link (bold link text),
-// text that was already bold (<b>/<strong>) in the source stays wrapped in <b>...</b>,
-// everything else (span/u/em/i etc) is unwrapped - only real headings, links, and
-// already-bold text end up bold.
-function renderInline(node, inheritedBold){
-  inheritedBold = inheritedBold || false;
+// Render inline content of a paragraph-level block for either 'html' or 'md' mode.
+// <a> becomes a link, already-bold/italic/underline text keeps that formatting,
+// everything else (span/div wrappers etc) is unwrapped.
+function renderInline(node, inherited, mode){
+  inherited = inherited || {bold:false, italic:false, underline:false};
+  mode = mode || 'html';
   let out = '';
   node.childNodes.forEach(child=>{
     if(child.nodeType === Node.TEXT_NODE){
-      out += child.textContent;
+      out += mode === 'md' ? escapeMdText(child.textContent) : child.textContent;
     } else if(child.nodeType === Node.ELEMENT_NODE){
       const tag = child.tagName;
       if(tag === 'BR'){
-        out += ' '; // no <br> allowed, collapse to space
+        out += ' ';
       } else if(tag === 'A'){
         const href = child.getAttribute('href') || '#';
-        const linkText = flattenText(child).trim();
-        if(linkText) out += `<a href="${escapeAttr(href)}"><b>${linkText}</b></a>`;
+        const target = child.getAttribute('target');
+        const rawText = flattenText(child, mode === 'md');
+        const leadingWs = rawText.match(/^\s*/)[0];
+        const trailingWs = rawText.match(/\s*$/)[0];
+        const linkText = rawText.trim();
+        if(linkText){
+          out += leadingWs;
+          if(mode === 'md'){
+            out += `[${linkText}](${href})`;
+          } else {
+            const targetAttr = target === '_blank' ? ' target="_blank" rel="noopener noreferrer"' : '';
+            out += `<a href="${escapeAttr(href)}"${targetAttr}><b>${linkText}</b></a>`;
+          }
+          out += trailingWs;
+        } else {
+          out += rawText;
+        }
       } else if(tag === 'IMG'){
         const src = child.getAttribute('src') || '';
         const alt = child.getAttribute('alt') || '';
-        if(src) out += `<img src="${escapeAttr(src)}" alt="${escapeAttr(alt)}">`;
-      } else {
-        // already bold in source (tag OR style) -> keep it bold in the output.
-        // If we're already inside a bold wrap, don't re-wrap - just recurse.
-        const boldHere = !inheritedBold && (isBoldTag(tag) || hasBoldStyle(child));
-        if(boldHere){
-          const inner = renderInline(child, true);
-          if(inner.trim()) out += `<b>${inner}</b>`;
-        } else {
-          out += renderInline(child, inheritedBold);
+        if(src){
+          out += mode === 'md' ? `![${alt}](${src})` : `<img src="${escapeAttr(src)}" alt="${escapeAttr(alt)}">`;
         }
+      } else {
+        const newBold = !inherited.bold && (tagImpliesStyle(tag,'bold') || hasStyleFlag(child,'bold'));
+        const newItalic = !inherited.italic && (tagImpliesStyle(tag,'italic') || hasStyleFlag(child,'italic'));
+        const newUnderline = !inherited.underline && (tagImpliesStyle(tag,'underline') || hasStyleFlag(child,'underline'));
+        const nextInherited = {
+          bold: inherited.bold || newBold,
+          italic: inherited.italic || newItalic,
+          underline: inherited.underline || newUnderline
+        };
+        let inner = renderInline(child, nextInherited, mode);
+        if(inner.trim()){
+          if(newUnderline) inner = `<u>${inner}</u>`;
+          if(newItalic) inner = mode === 'md' ? `*${inner}*` : `<i>${inner}</i>`;
+          if(newBold) inner = mode === 'md' ? `**${inner}**` : `<b>${inner}</b>`;
+        }
+        out += inner;
       }
     }
   });
@@ -596,11 +1017,12 @@ function hasBlockChild(node){
   });
 }
 
-function walkForBlocks(root, blocks){
+function walkForBlocks(root, blocks, mode){
+  mode = mode || 'html';
   root.childNodes.forEach(node=>{
     if(node.nodeType === Node.TEXT_NODE){
       const text = node.textContent.trim();
-      if(text) blocks.push({type:'para', text});
+      if(text) blocks.push({type:'para', text: mode === 'md' ? escapeMdText(text) : text});
       return;
     }
     if(node.nodeType !== Node.ELEMENT_NODE) return;
@@ -615,11 +1037,10 @@ function walkForBlocks(root, blocks){
     }
 
     if(tag === 'UL' || tag === 'OL'){
-      // each LI becomes its own block
       node.querySelectorAll(':scope > li').forEach(li=>{
-        const liBold = hasBoldStyle(li);
-        let content = renderInline(li, liBold).trim();
-        if(liBold && content) content = `<b>${content}</b>`;
+        const liBold = hasStyleFlag(li,'bold');
+        let content = renderInline(li, {bold:liBold}, mode).trim();
+        if(liBold && content) content = mode === 'md' ? `**${content}**` : `<b>${content}</b>`;
         if(content) blocks.push({type:'li', text:content});
       });
       return;
@@ -627,29 +1048,23 @@ function walkForBlocks(root, blocks){
 
     if(BLOCK_TAGS.has(tag)){
       if(HEADING_TAGS.has(tag)){
-        // headings: bold the whole thing, plain text only (no nested tags inside a heading)
-        const content = flattenText(node).trim();
-        if(content) blocks.push({type:'heading', text:content});
+        const level = parseInt(tag.charAt(1), 10) || 2;
+        const content = flattenText(node, mode === 'md').trim();
+        if(content) blocks.push({type:'heading', text:content, level});
         return;
       }
-      // if this container actually wraps other block-level elements (common with
-      // pasted content: a DIV/P holding nested H2/P/UL/IMG), recurse into its
-      // children instead of flattening everything into one paragraph.
       if(hasBlockChild(node)){
-        walkForBlocks(node, blocks);
+        walkForBlocks(node, blocks, mode);
         return;
       }
-      // catch bold applied to the whole paragraph/div itself (e.g. a Q that's
-      // entirely bold but isn't a real heading), not just bold inside it
-      const blockBold = hasBoldStyle(node);
-      let content = renderInline(node, blockBold).trim();
-      if(blockBold && content) content = `<b>${content}</b>`;
+      const blockBold = hasStyleFlag(node,'bold');
+      let content = renderInline(node, {bold:blockBold}, mode).trim();
+      if(blockBold && content) content = mode === 'md' ? `**${content}**` : `<b>${content}</b>`;
       if(content) blocks.push({type:'para', text:content});
       return;
     }
 
-    // Not a recognized block wrapper (e.g. a stray span/div wrapper at root) -> recurse
-    walkForBlocks(node, blocks);
+    walkForBlocks(node, blocks, mode);
   });
 }
 
@@ -658,14 +1073,13 @@ function renderV1(blocks){
   const parts = blocks.map(b=>{
     if(b.type === 'heading') return `<b>${b.text}</b>`;
     if(b.type === 'img') return `<img src="${escapeAttr(b.src)}" alt="${escapeAttr(b.alt)}">`;
-    return b.text; // para or li rendered as plain inline content
+    return b.text;
   });
   return parts.join('\n<blockquote></blockquote>\n');
 }
 
-// Format 2: headings -> <blockquote><b>text</b></blockquote> (single wrap, no extra separator around it)
-// list items -> <blockquote>text</blockquote> (single wrap)
-// plain paragraphs -> joined to each other with an empty <blockquote></blockquote> separator only
+// Format 2: headings -> <blockquote><b>text</b></blockquote>, list items -> <blockquote>text</blockquote>,
+// plain paragraphs joined with an empty <blockquote></blockquote> separator only between consecutive paragraphs.
 function renderV2(blocks){
   let out = [];
   blocks.forEach((b, i)=>{
@@ -676,7 +1090,6 @@ function renderV2(blocks){
     } else if(b.type === 'img'){
       out.push(`<blockquote><img src="${escapeAttr(b.src)}" alt="${escapeAttr(b.alt)}"></blockquote>`);
     } else {
-      // plain paragraph: if previous pushed item is also a plain paragraph, insert separator first
       const prev = blocks[i-1];
       if(prev && prev.type === 'para'){
         out.push('<blockquote></blockquote>');
@@ -687,27 +1100,32 @@ function renderV2(blocks){
   return out.join('\n');
 }
 
-// ---- Format 3: simple/native HTML (uses the same reliable block parser as
-// Format 1/2, but emits real semantic tags: h1-h6, p, ul/ol/li, img) ----
-function escapeHtml(str){
-  return str
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;');
+// Format 3: same structure as Format 1 (headings become <b>text</b>), but blocks
+// are separated by <blockquote><b>-</b></blockquote> instead of an empty blockquote.
+function renderV3(blocks){
+  const parts = blocks.map(b=>{
+    if(b.type === 'heading') return `<b>${b.text}</b>`;
+    if(b.type === 'img') return `<img src="${escapeAttr(b.src)}" alt="${escapeAttr(b.alt)}">`;
+    return b.text;
+  });
+  return parts.join('\n<blockquote><b>-</b></blockquote>\n');
 }
 
-// blocks[].text for para/li/heading already contains inline HTML (b/a/img) produced
-// by renderInline, EXCEPT headings which are stored as plain flattened text.
-function renderV3(blocks){
+// Format 4: simple/native HTML — real semantic tags: h1-h6 (level-accurate), p, ul/ol/li, img
+function escapeHtml(str){
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderV4(blocks){
   const out = [];
   let i = 0;
   while(i < blocks.length){
     const b = blocks[i];
     if(b.type === 'heading'){
-      out.push(`<h2>${escapeHtml(b.text)}</h2>`);
+      const lvl = Math.min(Math.max(b.level || 2, 1), 6);
+      out.push(`<h${lvl}>${escapeHtml(b.text)}</h${lvl}>`);
       i++;
     } else if(b.type === 'li'){
-      // group consecutive li's into a single <ul>
       const items = [];
       while(i < blocks.length && blocks[i].type === 'li'){
         items.push(`  <li>${blocks[i].text}</li>`);
@@ -727,113 +1145,31 @@ function renderV3(blocks){
 
 function convert(){
   const blocks = [];
-  walkForBlocks(editor, blocks);
+  walkForBlocks(editor, blocks, 'html');
   const format = document.getElementById('formatSelect').value;
   let html;
   if(format === 'v2') html = renderV2(blocks);
   else if(format === 'v3') html = renderV3(blocks);
+  else if(format === 'v4') html = renderV4(blocks);
   else html = renderV1(blocks);
-  output.textContent = html;
-  charCount.textContent = html.length + ' chars';
+  if(!outputLocked){
+    output.textContent = html;
+  }
 }
 
-// ---- Markdown conversion (separate from the HTML converter above) ----
-function renderInlineMD(node, inheritedBold){
-  inheritedBold = inheritedBold || false;
-  let out = '';
-  node.childNodes.forEach(child=>{
-    if(child.nodeType === Node.TEXT_NODE){
-      out += child.textContent;
-    } else if(child.nodeType === Node.ELEMENT_NODE){
-      const tag = child.tagName;
-      if(tag === 'BR'){
-        out += ' ';
-      } else if(tag === 'A'){
-        const href = child.getAttribute('href') || '#';
-        const linkText = flattenText(child).trim();
-        if(linkText) out += `[${linkText}](${href})`;
-      } else if(tag === 'IMG'){
-        const src = child.getAttribute('src') || '';
-        const alt = child.getAttribute('alt') || '';
-        if(src) out += `![${alt}](${src})`;
-      } else {
-        const boldHere = !inheritedBold && (isBoldTag(tag) || hasBoldStyle(child));
-        if(boldHere){
-          const inner = renderInlineMD(child, true);
-          if(inner.trim()) out += `**${inner}**`;
-        } else {
-          out += renderInlineMD(child, inheritedBold);
-        }
-      }
-    }
-  });
-  return out;
-}
-
-function walkForBlocksMD(root, blocks){
-  root.childNodes.forEach(node=>{
-    if(node.nodeType === Node.TEXT_NODE){
-      const text = node.textContent.trim();
-      if(text) blocks.push({type:'para', text});
-      return;
-    }
-    if(node.nodeType !== Node.ELEMENT_NODE) return;
-
-    const tag = node.tagName;
-
-    if(tag === 'IMG'){
-      const src = node.getAttribute('src') || '';
-      const alt = node.getAttribute('alt') || '';
-      if(src) blocks.push({type:'img', src, alt});
-      return;
-    }
-
-    if(tag === 'UL' || tag === 'OL'){
-      node.querySelectorAll(':scope > li').forEach(li=>{
-        const liBold = hasBoldStyle(li);
-        let content = renderInlineMD(li, liBold).trim();
-        if(liBold && content) content = `**${content}**`;
-        if(content) blocks.push({type:'li', text:content});
-      });
-      return;
-    }
-
-    if(BLOCK_TAGS.has(tag)){
-      if(HEADING_TAGS.has(tag)){
-        const content = flattenText(node).trim();
-        const level = parseInt(tag.charAt(1), 10) || 2;
-        if(content) blocks.push({type:'heading', text:content, level});
-        return;
-      }
-      // recurse into containers that wrap other block-level elements instead of
-      // flattening nested headings/paragraphs into one blob (same fix as HTML parser)
-      if(hasBlockChild(node)){
-        walkForBlocksMD(node, blocks);
-        return;
-      }
-      const blockBold = hasBoldStyle(node);
-      let content = renderInlineMD(node, blockBold).trim();
-      if(blockBold && content) content = `**${content}**`;
-      if(content) blocks.push({type:'para', text:content});
-      return;
-    }
-
-    walkForBlocksMD(node, blocks);
-  });
-}
-
+// ---- Markdown conversion ----
 function renderMarkdown(blocks){
   const parts = [];
   blocks.forEach((b, i)=>{
     let line;
     if(b.type === 'heading'){
-      line = '#'.repeat(Math.min(b.level || 2, 6)) + ' ' + b.text;
+      line = '#'.repeat(Math.min(Math.max(b.level || 2, 1), 6)) + ' ' + b.text;
     } else if(b.type === 'li'){
       line = '- ' + b.text;
     } else if(b.type === 'img'){
       line = `![${b.alt}](${b.src})`;
     } else {
-      line = b.text;
+      line = escapeMdLeading(b.text);
     }
     if(i === 0){
       parts.push(line);
@@ -848,20 +1184,33 @@ function renderMarkdown(blocks){
 
 function convertMD(){
   const blocks = [];
-  walkForBlocksMD(editor, blocks);
+  walkForBlocks(editor, blocks, 'md');
   currentMarkdown = renderMarkdown(blocks);
+}
+
+// ---- Word / character count for the Rich Text panel ----
+function updateEditorCounts(){
+  const text = editor.innerText || editor.textContent || '';
+  const trimmed = text.trim();
+  const words = trimmed ? trimmed.split(/\s+/).filter(Boolean).length : 0;
+  const chars = text.length;
+  document.getElementById('richCount').textContent = `${words} words · ${chars} chars`;
 }
 
 function convertAll(){
   try{
     convert();
     convertMD();
+    updateEditorCounts();
   }catch(err){
     console.error('PostSphere conversion error:', err);
   }
 }
 
-document.getElementById('formatSelect').addEventListener('change', convertAll);
+document.getElementById('formatSelect').addEventListener('change', ()=>{
+  outputLocked = false;
+  convertAll();
+});
 convertAll();
 
 // ---- Slug generator ----
@@ -873,10 +1222,10 @@ function slugify(text){
     .toString()
     .trim()
     .toLowerCase()
-    .replace(/[^\w\s-]/g, '')   // strip non-word chars (keeps unicode letters/digits)
-    .replace(/[\s_]+/g, '-')    // spaces/underscores -> hyphen
-    .replace(/-+/g, '-')        // collapse multiple hyphens
-    .replace(/^-+|-+$/g, '');   // trim leading/trailing hyphens
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 slugInput.addEventListener('input', ()=>{
