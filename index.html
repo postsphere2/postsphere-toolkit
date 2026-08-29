@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PostSphere Content Toolkit</title>
-<link rel="icon" href="https://i.ibb.co/TxNKtLbd/images.jpg">
+<link rel="icon" type="image/jpeg" href="https://ibb.co/G4rsRTtN">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -464,6 +464,7 @@
           <option value="v2">Format 2 (blockquote-wrapped)</option>
           <option value="v3">Format 3 (dash blockquote)</option>
           <option value="v4">Format 4 (simple/native HTML)</option>
+          <option value="v5">Format 5 (Scrapbox syntax)</option>
         </select>
       </div>
       <div class="actions">
@@ -932,24 +933,36 @@ function escapeMdLeading(line){
   return line.replace(/^(\s*)([#\-*+>]|\d+\.)(\s)/, function(m,p1,p2,p3){ return p1 + '\\' + p2 + p3; });
 }
 
+// Scrapbox has no formal escape sequence for [ and ] — those characters are what
+// define its link/bold/italic/image syntax. To stop literal brackets in the
+// user's own text from accidentally being parsed as syntax, a zero-width space is
+// inserted next to them: it's invisible when rendered, but breaks the bracket
+// pairing that Scrapbox looks for.
+function escapeScrapboxText(text){
+  return text.replace(/\[/g, '[\u200b').replace(/\]/g, '\u200b]');
+}
+
 // Flatten to plain text only (used for anchor text / headings) — no nested tags.
-function flattenText(node, escapeMd){
+// `mode` is 'html', 'md', or 'scrapbox' and controls which escaping (if any) is applied.
+function flattenText(node, mode){
   let out = '';
   node.childNodes.forEach(child=>{
     if(child.nodeType === Node.TEXT_NODE){
-      out += escapeMd ? escapeMdText(child.textContent) : child.textContent;
+      if(mode === 'md') out += escapeMdText(child.textContent);
+      else if(mode === 'scrapbox') out += escapeScrapboxText(child.textContent);
+      else out += child.textContent;
     } else if(child.nodeType === Node.ELEMENT_NODE){
       if(child.tagName === 'BR'){
         out += ' ';
       } else {
-        out += flattenText(child, escapeMd);
+        out += flattenText(child, mode);
       }
     }
   });
   return out;
 }
 
-// Render inline content of a paragraph-level block for either 'html' or 'md' mode.
+// Render inline content of a paragraph-level block for 'html', 'md', or 'scrapbox' mode.
 // <a> becomes a link, already-bold/italic/underline text keeps that formatting,
 // everything else (span/div wrappers etc) is unwrapped.
 function renderInline(node, inherited, mode){
@@ -958,7 +971,9 @@ function renderInline(node, inherited, mode){
   let out = '';
   node.childNodes.forEach(child=>{
     if(child.nodeType === Node.TEXT_NODE){
-      out += mode === 'md' ? escapeMdText(child.textContent) : child.textContent;
+      if(mode === 'md') out += escapeMdText(child.textContent);
+      else if(mode === 'scrapbox') out += escapeScrapboxText(child.textContent);
+      else out += child.textContent;
     } else if(child.nodeType === Node.ELEMENT_NODE){
       const tag = child.tagName;
       if(tag === 'BR'){
@@ -966,7 +981,7 @@ function renderInline(node, inherited, mode){
       } else if(tag === 'A'){
         const href = child.getAttribute('href') || '#';
         const target = child.getAttribute('target');
-        const rawText = flattenText(child, mode === 'md');
+        const rawText = flattenText(child, mode);
         const leadingWs = rawText.match(/^\s*/)[0];
         const trailingWs = rawText.match(/\s*$/)[0];
         const linkText = rawText.trim();
@@ -974,6 +989,9 @@ function renderInline(node, inherited, mode){
           out += leadingWs;
           if(mode === 'md'){
             out += `[${linkText}](${href})`;
+          } else if(mode === 'scrapbox'){
+            // Scrapbox external link syntax: [link text url]
+            out += `[${linkText} ${href}]`;
           } else {
             const targetAttr = target === '_blank' ? ' target="_blank" rel="noopener noreferrer"' : '';
             out += `<a href="${escapeAttr(href)}"${targetAttr}><b>${linkText}</b></a>`;
@@ -986,7 +1004,9 @@ function renderInline(node, inherited, mode){
         const src = child.getAttribute('src') || '';
         const alt = child.getAttribute('alt') || '';
         if(src){
-          out += mode === 'md' ? `![${alt}](${src})` : `<img src="${escapeAttr(src)}" alt="${escapeAttr(alt)}">`;
+          if(mode === 'md') out += `![${alt}](${src})`;
+          else if(mode === 'scrapbox') out += `[${src}]`;
+          else out += `<img src="${escapeAttr(src)}" alt="${escapeAttr(alt)}">`;
         }
       } else {
         const newBold = !inherited.bold && (tagImpliesStyle(tag,'bold') || hasStyleFlag(child,'bold'));
@@ -999,9 +1019,16 @@ function renderInline(node, inherited, mode){
         };
         let inner = renderInline(child, nextInherited, mode);
         if(inner.trim()){
-          if(newUnderline) inner = `<u>${inner}</u>`;
-          if(newItalic) inner = mode === 'md' ? `*${inner}*` : `<i>${inner}</i>`;
-          if(newBold) inner = mode === 'md' ? `**${inner}**` : `<b>${inner}</b>`;
+          if(mode === 'scrapbox'){
+            // Scrapbox has no native underline syntax, so underline is dropped
+            // (bold/italic still map to [[..]] / [/ ..]).
+            if(newItalic) inner = `[/ ${inner}]`;
+            if(newBold) inner = `[[${inner}]]`;
+          } else {
+            if(newUnderline) inner = `<u>${inner}</u>`;
+            if(newItalic) inner = mode === 'md' ? `*${inner}*` : `<i>${inner}</i>`;
+            if(newBold) inner = mode === 'md' ? `**${inner}**` : `<b>${inner}</b>`;
+          }
         }
         out += inner;
       }
@@ -1022,7 +1049,12 @@ function walkForBlocks(root, blocks, mode){
   root.childNodes.forEach(node=>{
     if(node.nodeType === Node.TEXT_NODE){
       const text = node.textContent.trim();
-      if(text) blocks.push({type:'para', text: mode === 'md' ? escapeMdText(text) : text});
+      if(text){
+        let t = text;
+        if(mode === 'md') t = escapeMdText(text);
+        else if(mode === 'scrapbox') t = escapeScrapboxText(text);
+        blocks.push({type:'para', text: t});
+      }
       return;
     }
     if(node.nodeType !== Node.ELEMENT_NODE) return;
@@ -1040,7 +1072,10 @@ function walkForBlocks(root, blocks, mode){
       node.querySelectorAll(':scope > li').forEach(li=>{
         const liBold = hasStyleFlag(li,'bold');
         let content = renderInline(li, {bold:liBold}, mode).trim();
-        if(liBold && content) content = mode === 'md' ? `**${content}**` : `<b>${content}</b>`;
+        if(liBold && content){
+          if(mode === 'scrapbox') content = `[[${content}]]`;
+          else content = mode === 'md' ? `**${content}**` : `<b>${content}</b>`;
+        }
         if(content) blocks.push({type:'li', text:content});
       });
       return;
@@ -1049,7 +1084,7 @@ function walkForBlocks(root, blocks, mode){
     if(BLOCK_TAGS.has(tag)){
       if(HEADING_TAGS.has(tag)){
         const level = parseInt(tag.charAt(1), 10) || 2;
-        const content = flattenText(node, mode === 'md').trim();
+        const content = flattenText(node, mode).trim();
         if(content) blocks.push({type:'heading', text:content, level});
         return;
       }
@@ -1059,7 +1094,10 @@ function walkForBlocks(root, blocks, mode){
       }
       const blockBold = hasStyleFlag(node,'bold');
       let content = renderInline(node, {bold:blockBold}, mode).trim();
-      if(blockBold && content) content = mode === 'md' ? `**${content}**` : `<b>${content}</b>`;
+      if(blockBold && content){
+        if(mode === 'scrapbox') content = `[[${content}]]`;
+        else content = mode === 'md' ? `**${content}**` : `<b>${content}</b>`;
+      }
       if(content) blocks.push({type:'para', text:content});
       return;
     }
@@ -1143,15 +1181,55 @@ function renderV4(blocks){
   return out.join('\n');
 }
 
+// Format 5: Scrapbox syntax (https://scrapbox.io/help/Syntax)
+// - Headings use bracket + repeated-asterisk sizing: [*** big] down to [* small]
+//   (Scrapbox has no dedicated H1-H6 tags, just larger-bold-text via more stars).
+// - Bullet list items use a single leading space, Scrapbox's own indent-based bullet.
+// - A bare image URL is wrapped in brackets, [url], which is Scrapbox's syntax for
+//   an embedded/clickable image.
+// - Bold/italic/links inside headings, list items and paragraphs are already
+//   converted to [[bold]] / [/ italic] / [text url] by renderInline/flattenText above.
+function renderScrapbox(blocks){
+  const parts = [];
+  blocks.forEach((b, i)=>{
+    let line;
+    if(b.type === 'heading'){
+      const lvl = Math.min(Math.max(b.level || 2, 1), 6);
+      const stars = '*'.repeat(Math.max(4 - lvl, 1));
+      line = `[${stars} ${b.text}]`;
+    } else if(b.type === 'li'){
+      line = ' ' + b.text;
+    } else if(b.type === 'img'){
+      line = `[${b.src}]`;
+    } else {
+      line = b.text;
+    }
+    if(i === 0){
+      parts.push(line);
+    } else {
+      const prev = blocks[i-1];
+      const sep = (b.type === 'li' && prev.type === 'li') ? '\n' : '\n\n';
+      parts.push(sep + line);
+    }
+  });
+  return parts.join('');
+}
+
 function convert(){
-  const blocks = [];
-  walkForBlocks(editor, blocks, 'html');
   const format = document.getElementById('formatSelect').value;
   let html;
-  if(format === 'v2') html = renderV2(blocks);
-  else if(format === 'v3') html = renderV3(blocks);
-  else if(format === 'v4') html = renderV4(blocks);
-  else html = renderV1(blocks);
+  if(format === 'v5'){
+    const sbBlocks = [];
+    walkForBlocks(editor, sbBlocks, 'scrapbox');
+    html = renderScrapbox(sbBlocks);
+  } else {
+    const blocks = [];
+    walkForBlocks(editor, blocks, 'html');
+    if(format === 'v2') html = renderV2(blocks);
+    else if(format === 'v3') html = renderV3(blocks);
+    else if(format === 'v4') html = renderV4(blocks);
+    else html = renderV1(blocks);
+  }
   if(!outputLocked){
     output.textContent = html;
   }
