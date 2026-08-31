@@ -465,10 +465,11 @@
           <option value="v3">Format 3 (dash blockquote)</option>
           <option value="v4">Format 4 (simple/native HTML)</option>
           <option value="v5">Format 5 (Scrapbox syntax)</option>
+          <option value="v6">Format 6 (BBCode)</option>
         </select>
       </div>
       <div class="actions">
-        <button class="btn btn-primary" id="copyBtn">Copy HTML</button>
+        <button class="btn btn-primary" id="copyBtn">Copy Code</button>
         <button class="btn btn-ghost" id="resyncBtn">↺ Resync from Rich Text</button>
         <button class="btn btn-ghost" id="clearBtn">Clear Editor</button>
         <span class="copied" id="copiedMsg">Copied ✓</span>
@@ -942,14 +943,22 @@ function escapeScrapboxText(text){
   return text.replace(/\[/g, '[\u200b').replace(/\]/g, '\u200b]');
 }
 
+// BBCode also uses [ and ] to define its tags, so the same zero-width-space trick
+// is used here to keep literal brackets in the user's own text from being parsed
+// as a [tag].
+function escapeBbcodeText(text){
+  return text.replace(/\[/g, '[\u200b').replace(/\]/g, '\u200b]');
+}
+
 // Flatten to plain text only (used for anchor text / headings) — no nested tags.
-// `mode` is 'html', 'md', or 'scrapbox' and controls which escaping (if any) is applied.
+// `mode` is 'html', 'md', 'scrapbox', or 'bbcode' and controls which escaping (if any) is applied.
 function flattenText(node, mode){
   let out = '';
   node.childNodes.forEach(child=>{
     if(child.nodeType === Node.TEXT_NODE){
       if(mode === 'md') out += escapeMdText(child.textContent);
       else if(mode === 'scrapbox') out += escapeScrapboxText(child.textContent);
+      else if(mode === 'bbcode') out += escapeBbcodeText(child.textContent);
       else out += child.textContent;
     } else if(child.nodeType === Node.ELEMENT_NODE){
       if(child.tagName === 'BR'){
@@ -973,6 +982,7 @@ function renderInline(node, inherited, mode){
     if(child.nodeType === Node.TEXT_NODE){
       if(mode === 'md') out += escapeMdText(child.textContent);
       else if(mode === 'scrapbox') out += escapeScrapboxText(child.textContent);
+      else if(mode === 'bbcode') out += escapeBbcodeText(child.textContent);
       else out += child.textContent;
     } else if(child.nodeType === Node.ELEMENT_NODE){
       const tag = child.tagName;
@@ -988,10 +998,14 @@ function renderInline(node, inherited, mode){
         if(linkText){
           out += leadingWs;
           if(mode === 'md'){
-            out += `[${linkText}](${href})`;
+            // Link text is always bolded, e.g. [**home espresso brewing**](url)
+            out += `[**${linkText}**](${href})`;
           } else if(mode === 'scrapbox'){
             // Scrapbox external link syntax: [link text url]
             out += `[${linkText} ${href}]`;
+          } else if(mode === 'bbcode'){
+            // BBCode url tag always wraps its text in [b]...[/b] too
+            out += `[url=${href}][b]${linkText}[/b][/url]`;
           } else {
             const targetAttr = target === '_blank' ? ' target="_blank" rel="noopener noreferrer"' : '';
             out += `<a href="${escapeAttr(href)}"${targetAttr}><b>${linkText}</b></a>`;
@@ -1006,6 +1020,7 @@ function renderInline(node, inherited, mode){
         if(src){
           if(mode === 'md') out += `![${alt}](${src})`;
           else if(mode === 'scrapbox') out += `[${src}]`;
+          else if(mode === 'bbcode') out += `[img]${src}[/img]`;
           else out += `<img src="${escapeAttr(src)}" alt="${escapeAttr(alt)}">`;
         }
       } else {
@@ -1024,6 +1039,10 @@ function renderInline(node, inherited, mode){
             // (bold/italic still map to [[..]] / [/ ..]).
             if(newItalic) inner = `[/ ${inner}]`;
             if(newBold) inner = `[[${inner}]]`;
+          } else if(mode === 'bbcode'){
+            if(newUnderline) inner = `[u]${inner}[/u]`;
+            if(newItalic) inner = `[i]${inner}[/i]`;
+            if(newBold) inner = `[b]${inner}[/b]`;
           } else {
             if(newUnderline) inner = `<u>${inner}</u>`;
             if(newItalic) inner = mode === 'md' ? `*${inner}*` : `<i>${inner}</i>`;
@@ -1053,6 +1072,7 @@ function walkForBlocks(root, blocks, mode){
         let t = text;
         if(mode === 'md') t = escapeMdText(text);
         else if(mode === 'scrapbox') t = escapeScrapboxText(text);
+        else if(mode === 'bbcode') t = escapeBbcodeText(text);
         blocks.push({type:'para', text: t});
       }
       return;
@@ -1074,6 +1094,7 @@ function walkForBlocks(root, blocks, mode){
         let content = renderInline(li, {bold:liBold}, mode).trim();
         if(liBold && content){
           if(mode === 'scrapbox') content = `[[${content}]]`;
+          else if(mode === 'bbcode') content = `[b]${content}[/b]`;
           else content = mode === 'md' ? `**${content}**` : `<b>${content}</b>`;
         }
         if(content) blocks.push({type:'li', text:content});
@@ -1096,6 +1117,7 @@ function walkForBlocks(root, blocks, mode){
       let content = renderInline(node, {bold:blockBold}, mode).trim();
       if(blockBold && content){
         if(mode === 'scrapbox') content = `[[${content}]]`;
+        else if(mode === 'bbcode') content = `[b]${content}[/b]`;
         else content = mode === 'md' ? `**${content}**` : `<b>${content}</b>`;
       }
       if(content) blocks.push({type:'para', text:content});
@@ -1215,6 +1237,39 @@ function renderScrapbox(blocks){
   return parts.join('');
 }
 
+// Format 6: BBCode (Bulletin Board Code)
+// - Bold/italic/underline: [b]..[/b], [i]..[/i], [u]..[/u]
+// - Links always bold their own text: [url=https://...][b]text[/b][/url]
+// - Images: [img]https://...[/img]
+// - Headings: BBCode has no dedicated heading tag, so they're rendered [b]bold[/b],
+//   matching how forums conventionally emphasize a heading line.
+// - Lists: standard BBCode list syntax, [list] with one [*] per item.
+function renderBbcode(blocks){
+  const parts = [];
+  let i = 0;
+  while(i < blocks.length){
+    const b = blocks[i];
+    if(b.type === 'heading'){
+      parts.push(`[b]${b.text}[/b]`);
+      i++;
+    } else if(b.type === 'li'){
+      const items = [];
+      while(i < blocks.length && blocks[i].type === 'li'){
+        items.push(`[*] ${blocks[i].text}`);
+        i++;
+      }
+      parts.push(`[list]\n${items.join('\n')}\n[/list]`);
+    } else if(b.type === 'img'){
+      parts.push(`[img]${b.src}[/img]`);
+      i++;
+    } else {
+      parts.push(b.text);
+      i++;
+    }
+  }
+  return parts.join('\n\n');
+}
+
 function convert(){
   const format = document.getElementById('formatSelect').value;
   let html;
@@ -1222,6 +1277,10 @@ function convert(){
     const sbBlocks = [];
     walkForBlocks(editor, sbBlocks, 'scrapbox');
     html = renderScrapbox(sbBlocks);
+  } else if(format === 'v6'){
+    const bbBlocks = [];
+    walkForBlocks(editor, bbBlocks, 'bbcode');
+    html = renderBbcode(bbBlocks);
   } else {
     const blocks = [];
     walkForBlocks(editor, blocks, 'html');
