@@ -583,6 +583,19 @@ document.querySelectorAll('.toolbar button[data-cmd]').forEach(btn=>{
   });
 });
 
+// Writes text-align straight onto the selected blocks. (execCommand('justifyLeft') does
+// nothing on text that is already left-aligned, so "Left" would never reach the output.)
+function applyAlignment(cmd){
+  const align = {justifyLeft:'left', justifyCenter:'center', justifyRight:'right'}[cmd];
+  const s = window.getSelection();
+  if(!align || !s.rangeCount){ document.execCommand(cmd); return; }
+  const range = s.getRangeAt(0);
+  const targets = Array.from(editor.querySelectorAll('p,h1,h2,h3,h4,h5,h6,div,li,blockquote')).filter(el =>
+    range.intersectsNode(el) && !el.querySelector('p,h1,h2,h3,h4,h5,h6,div,li,blockquote,ul,ol'));
+  if(!targets.length){ document.execCommand(cmd); return; }
+  targets.forEach(el => { el.style.textAlign = align; });
+}
+
 // ---- Heading / alignment dropdowns ----
 // A <select> steals focus from the editor, so remember the last caret/selection
 // inside the editor and restore it before applying the command.
@@ -601,7 +614,8 @@ document.addEventListener('selectionchange', ()=>{
       s.removeAllRanges();
       s.addRange(lastEditorRange);
     }
-    document.execCommand(cmd, false, val);
+    if(id === 'alignSelect') applyAlignment(cmd);
+    else document.execCommand(cmd, false, val);
     sel.selectedIndex = 0;
     convertAll();
   });
@@ -795,7 +809,26 @@ function sanitizeHtmlForInsert(html){
     const src = img.getAttribute('src') || '';
     if(!/^https?:\/\//i.test(src)) img.remove();
   });
+  container.querySelectorAll('br.Apple-interchange-newline, meta, style, script').forEach(el => el.remove());
+  trimEmptyEdges(container);
   return container.innerHTML;
+}
+
+// Pasted content often starts/ends with empty paragraphs, <br>s or whitespace-only
+// wrappers; those show up as a blank gap at the top of the editor. Strip them.
+function isEmptyNode(n){
+  if(n.nodeType === Node.TEXT_NODE) return !n.textContent.replace(/[\s ​]/g, '');
+  if(n.nodeType !== Node.ELEMENT_NODE) return true;
+  if(n.tagName === 'IMG' || n.querySelector('img, table, hr')) return false;
+  return !(n.textContent || '').replace(/[\s ​]/g, '');
+}
+
+function trimEmptyEdges(root){
+  while(root.firstChild && isEmptyNode(root.firstChild)) root.removeChild(root.firstChild);
+  while(root.lastChild && isEmptyNode(root.lastChild)) root.removeChild(root.lastChild);
+  // Google Docs wraps everything in one <b id="docs-internal-guid-..."> — trim inside it too.
+  const only = root.children.length === 1 ? root.firstElementChild : null;
+  if(only && root.childNodes.length === 1 && /^(B|SPAN|DIV)$/.test(only.tagName)) trimEmptyEdges(only);
 }
 
 function insertSanitizedHtml(html){
@@ -972,7 +1005,7 @@ function pdfWalk(parent, out){
       const hr = [];
       pdfInline(n, {bold: true}, hr);
       pdfTrimRuns(hr);
-      if(hr.length) out.push({text: hr, fontSize: PDF_HEADING_SIZE[lvl] || 12, margin: [0, lvl === 1 ? 0 : 10, 0, 6], keepWithNext: true});
+      if(hr.length) out.push({text: hr, fontSize: PDF_HEADING_SIZE[lvl] || 12, margin: [0, lvl === 1 ? 0 : 10, 0, 6], keepWithNext: true, alignment: getAlign(n) || undefined});
     } else if(tag === 'UL' || tag === 'OL'){
       const items = [];
       Array.from(n.children).filter(c => c.tagName === 'LI').forEach(li=>{
@@ -1000,7 +1033,7 @@ function pdfWalk(parent, out){
       pdfInline(n, {}, pr);
       n.querySelectorAll(':scope > img').forEach(img => out.push({_img: img.src, alt: img.alt}));
       pdfTrimRuns(pr);
-      if(pr.length) out.push({text: pr, margin: [0,0,0,8]});
+      if(pr.length) out.push({text: pr, margin: [0,0,0,8], alignment: getAlign(n) || undefined});
     } else if(tag === 'IMG'){
       if(n.src) out.push({_img: n.src, alt: n.alt});
     } else if(tag === 'TABLE'){
@@ -1360,6 +1393,12 @@ function parseTableBlock(tableEl, mode){
   return {type:'table', rows, hasHeader};
 }
 
+// Explicit text alignment set with the Align dropdown (inline style or align attribute).
+function getAlign(el){
+  const v = ((el.style && el.style.textAlign) || el.getAttribute('align') || '').toLowerCase();
+  return (v === 'left' || v === 'center' || v === 'right' || v === 'justify') ? v : '';
+}
+
 function walkForBlocks(root, blocks, mode){
   mode = mode || 'html';
   root.childNodes.forEach(node=>{
@@ -1410,7 +1449,7 @@ function walkForBlocks(root, blocks, mode){
       if(HEADING_TAGS.has(tag)){
         const level = parseInt(tag.charAt(1), 10) || 2;
         const content = flattenText(node, mode).trim();
-        if(content) blocks.push({type:'heading', text:content, level});
+        if(content) blocks.push({type:'heading', text:content, level, align:getAlign(node)});
         return;
       }
       if(hasBlockChild(node)){
@@ -1424,7 +1463,7 @@ function walkForBlocks(root, blocks, mode){
         else if(mode === 'bbcode') content = `[b]${content}[/b]`;
         else content = mode === 'md' ? `**${content}**` : `<b>${content}</b>`;
       }
-      if(content) blocks.push({type:'para', text:content});
+      if(content) blocks.push({type:'para', text:content, align:getAlign(node)});
       return;
     }
 
@@ -1492,6 +1531,10 @@ function escapeHtml(str){
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+function alignAttr(b){
+  return b.align ? ` style="text-align: ${b.align};"` : '';
+}
+
 function renderV4(blocks){
   const out = [];
   let i = 0;
@@ -1499,7 +1542,7 @@ function renderV4(blocks){
     const b = blocks[i];
     if(b.type === 'heading'){
       const lvl = Math.min(Math.max(b.level || 2, 1), 6);
-      out.push(`<h${lvl}>${escapeHtml(b.text)}</h${lvl}>`);
+      out.push(`<h${lvl}${alignAttr(b)}>${escapeHtml(b.text)}</h${lvl}>`);
       i++;
     } else if(b.type === 'li'){
       const items = [];
@@ -1521,7 +1564,7 @@ function renderV4(blocks){
       out.push(`<table>\n${rowsHtml}\n</table>`);
       i++;
     } else {
-      out.push(`<p>${b.text}</p>`);
+      out.push(`<p${alignAttr(b)}>${b.text}</p>`);
       i++;
     }
   }
