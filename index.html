@@ -421,6 +421,11 @@
       <h2><svg class="i"><use href="#i-slug"/></svg>Slug Generator</h2>
     </div>
     <div class="slug-row">
+      <div class="slug-actions">
+        <button class="btn btn-danger" id="slugClearBtn"><svg class="i"><use href="#i-trash"/></svg>Clear</button>
+        <button class="btn btn-primary" id="slugCopyBtn"><svg class="i"><use href="#i-copy"/></svg>Copy</button>
+        <span class="copied" id="slugCopiedMsg">Copied ✓</span>
+      </div>
       <div class="slug-field">
         <label class="sr-only" for="slugInput">Input Text</label>
         <input type="text" id="slugInput" placeholder="Input text, e.g. My Awesome Blog Post!">
@@ -428,11 +433,6 @@
       <div class="slug-field">
         <label class="sr-only" for="slugOutput">Output Slug</label>
         <input type="text" id="slugOutput" readonly placeholder="my-awesome-blog-post">
-      </div>
-      <div class="slug-actions">
-        <button class="btn btn-danger" id="slugClearBtn"><svg class="i"><use href="#i-trash"/></svg>Clear</button>
-        <button class="btn btn-primary" id="slugCopyBtn"><svg class="i"><use href="#i-copy"/></svg>Copy</button>
-        <span class="copied" id="slugCopiedMsg">Copied ✓</span>
       </div>
     </div>
   </section>
