@@ -406,6 +406,7 @@
           <span class="copied" id="downloadedMsg">Downloaded ✓</span>
           <button class="btn btn-primary" id="downloadPdfBtn"><svg class="i"><use href="#i-pdf"/></svg>Download PDF</button>
           <span class="copied" id="pdfMsg">PDF saved ✓</span>
+          <span class="copied" id="uploadMsg"></span>
         </div>
         <div class="divider-v"></div>
         <button class="theme-toggle" id="themeToggle" title="Switch theme">
@@ -728,17 +729,9 @@ document.getElementById('linkModalApply').addEventListener('click', ()=>{
 const imageFileInput = document.getElementById('imageFileInput');
 
 document.getElementById('imageBtn').addEventListener('click', ()=>{
-  const useUrl = confirm('Add image from a URL?\n\nOK = Enter a URL\nCancel = Upload from device');
-  if(useUrl){
-    const url = prompt('Enter image URL (https://...):');
-    if(url){
-      editor.focus();
-      document.execCommand('insertImage', false, url.trim());
-      convertAll();
-    }
-  } else {
-    imageFileInput.click();
-  }
+  editor.focus();
+  saveSelection(); // remember the caret so the image lands where it was
+  imageFileInput.click();
 });
 
 imageFileInput.addEventListener('change', (e)=>{
@@ -747,6 +740,130 @@ imageFileInput.addEventListener('change', (e)=>{
   e.target.value = '';
 });
 
+// ---- ImgBB hosting ----
+// Local/base64 images (Google Docs paste, the Image button) are uploaded to ImgBB and
+// replaced by their short https link, so a huge base64 string never lands in the
+// editor or the converted code. Images that already have an https URL are untouched.
+// NOTE: this key is visible to anyone who views the page source. Keep the tool private,
+// or move the upload behind a server-side function if the site is public.
+const IMGBB_API_KEY = '5897a590afced6a02455f5157e509955';
+const IMGBB_ENDPOINT = 'https://api.imgbb.com/1/upload';
+let uploadSeq = 0;
+let pendingUploads = 0;
+let uploadToastTimer = null;
+
+function showUploadToast(text, autoHideMs){
+  const el = document.getElementById('uploadMsg');
+  if(!el) return; // the toast is cosmetic — never let it stop an upload
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(uploadToastTimer);
+  if(autoHideMs) uploadToastTimer = setTimeout(()=> el.classList.remove('show'), autoHideMs);
+}
+
+// Big pasted images (multi-MB PNGs from Google Docs) make the upload very slow, so
+// shrink them first: max 1600px on the long side, re-encoded as JPEG. Small images
+// are sent as they are.
+function shrinkDataUrl(dataUrl, maxDim, quality){
+  return new Promise(resolve=>{
+    if(dataUrl.length < 400000) return resolve(dataUrl); // ~300 KB, fine as is
+    const img = new Image();
+    const giveUp = setTimeout(()=> resolve(dataUrl), 10000); // never block the upload on resizing
+    img.onload = ()=>{
+      clearTimeout(giveUp);
+      try{
+        let w = img.naturalWidth, h = img.naturalHeight;
+        const scale = Math.min(1, maxDim / Math.max(w, h));
+        w = Math.round(w * scale); h = Math.round(h * scale);
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        const out = c.toDataURL('image/jpeg', quality);
+        resolve(out.length < dataUrl.length ? out : dataUrl);
+      }catch(e){ resolve(dataUrl); }
+    };
+    img.onerror = ()=> resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
+async function uploadToImgbb(dataUrl){
+  dataUrl = await shrinkDataUrl(dataUrl, 1600, 0.85);
+  const base64 = dataUrl.slice(dataUrl.indexOf(',') + 1);
+  const form = new FormData();
+  form.append('image', base64);
+  console.log('[ImgBB] uploading ~' + Math.round(base64.length * 0.75 / 1024) + ' KB');
+  const t0 = performance.now();
+  // XMLHttpRequest (not fetch) so the real upload progress can be shown.
+  const { status, json } = await new Promise((resolve, reject)=>{
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', IMGBB_ENDPOINT + '?key=' + encodeURIComponent(IMGBB_API_KEY));
+    xhr.timeout = 120000;
+    xhr.upload.onprogress = (e)=>{
+      if(e.lengthComputable) showUploadToast('Uploading image… ' + Math.round(e.loaded / e.total * 100) + '%');
+    };
+    xhr.onload = ()=>{
+      let parsed = null;
+      try{ parsed = JSON.parse(xhr.responseText); }catch(e){}
+      resolve({ status: xhr.status, json: parsed });
+    };
+    xhr.onerror = ()=> reject(new Error('network error — api.imgbb.com could not be reached (blocked or offline?)'));
+    xhr.ontimeout = ()=> reject(new Error('timed out after 120 seconds'));
+    xhr.send(form);
+  });
+  console.log('[ImgBB] done in ' + Math.round(performance.now() - t0) + ' ms, HTTP ' + status);
+  if(status < 200 || status >= 300 || !json || !json.success || !json.data){
+    throw new Error((json && json.error && json.error.message) || ('HTTP ' + status));
+  }
+  return json.data.url;
+}
+
+function makeUploadPlaceholder(){
+  const id = 'ps-up-' + (++uploadSeq);
+  const span = document.createElement('span');
+  span.setAttribute('data-upload', id);
+  span.textContent = '⏳ Uploading image…';
+  return { id, span };
+}
+
+// Uploads dataUrl and swaps the placeholder with the final <img src="https://...">.
+async function finishUpload(id, dataUrl, alt){
+  pendingUploads++;
+  showUploadToast('Uploading ' + pendingUploads + ' image' + (pendingUploads > 1 ? 's' : '') + '…');
+  let failed = null;
+  try{
+    const url = await uploadToImgbb(dataUrl);
+    const ph = editor.querySelector('[data-upload="' + id + '"]');
+    if(ph){
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = alt || '';
+      ph.replaceWith(img);
+    }
+  }catch(err){
+    failed = err;
+    console.error('ImgBB upload failed:', err);
+    const ph = editor.querySelector('[data-upload="' + id + '"]');
+    if(ph) ph.remove();
+  }
+  pendingUploads--;
+  if(pendingUploads > 0) showUploadToast('Uploading ' + pendingUploads + ' image' + (pendingUploads > 1 ? 's' : '') + '…');
+  else showUploadToast(failed ? 'Image upload failed' : 'Image uploaded ✓', 1800);
+  if(failed) alert('Image could not be uploaded to ImgBB (' + failed.message + '). Check your internet connection and try again.');
+  convertAll();
+}
+
+// Insert a placeholder at the caret and upload in the background.
+function insertAndUploadImage(dataUrl, alt){
+  const { id, span } = makeUploadPlaceholder();
+  editor.focus();
+  restoreSelection(); // caret saved when the Image button was clicked
+  savedRange = null;
+  document.execCommand('insertHTML', false, span.outerHTML);
+  finishUpload(id, dataUrl, alt);
+}
 // Compress any image (File, data: URI, or remote URL as a last resort) down to a
 // reasonable max dimension + JPEG quality before inserting, so we never dump a
 // giant raw base64 blob into the output.
@@ -768,14 +885,16 @@ function compressAndInsertImageSrc(src, maxDim, quality){
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, w, h);
       const dataUrl = canvas.toDataURL('image/jpeg', quality);
-      editor.focus();
-      document.execCommand('insertImage', false, dataUrl);
-      convertAll();
+      insertAndUploadImage(dataUrl);
     }catch(err){
       console.error('Image compress error:', err);
-      editor.focus();
-      document.execCommand('insertImage', false, src);
-      convertAll();
+      if(/^data:image\//i.test(src)){
+        insertAndUploadImage(src);
+      } else {
+        editor.focus();
+        document.execCommand('insertImage', false, src);
+        convertAll();
+      }
     }
   };
   img.onerror = ()=>{
@@ -802,12 +921,19 @@ function compressAndInsertImage(file, maxDim, quality){
 // embedded as a giant blob of code. This is what lets a Google Docs paste (which
 // often carries a large inline image alongside real text) keep all of its text
 // and formatting instead of losing everything but that one image.
-function sanitizeHtmlForInsert(html){
+function sanitizeHtmlForInsert(html, uploads){
   const container = document.createElement('div');
   container.innerHTML = html;
   container.querySelectorAll('img').forEach(img=>{
     const src = img.getAttribute('src') || '';
-    if(!/^https?:\/\//i.test(src)) img.remove();
+    if(uploads && /^data:image\//i.test(src)){
+      // base64 image (e.g. from Google Docs): swap for a placeholder, upload it afterwards.
+      const { id, span } = makeUploadPlaceholder();
+      uploads.push({ id, dataUrl: src, alt: img.getAttribute('alt') || '' });
+      img.replaceWith(span);
+    } else if(!/^https?:\/\//i.test(src)){
+      img.remove();
+    }
   });
   container.querySelectorAll('br.Apple-interchange-newline, meta, style, script').forEach(el => el.remove());
   trimEmptyEdges(container);
@@ -832,9 +958,12 @@ function trimEmptyEdges(root){
 }
 
 function insertSanitizedHtml(html){
+  const uploads = [];
+  const clean = sanitizeHtmlForInsert(html, uploads);
   editor.focus();
-  document.execCommand('insertHTML', false, sanitizeHtmlForInsert(html));
+  document.execCommand('insertHTML', false, clean);
   convertAll();
+  uploads.forEach(u => finishUpload(u.id, u.dataUrl, u.alt));
 }
 
 editor.addEventListener('dragover', (e)=>{ e.preventDefault(); });
@@ -1023,7 +1152,7 @@ function pdfWalk(parent, out){
     } else if(tag === 'P'){
       const pr = [];
       pdfInline(n, {}, pr);
-      n.querySelectorAll(':scope > img').forEach(img => out.push({_img: img.src, alt: img.alt}));
+      n.querySelectorAll('img').forEach(img => out.push({_img: img.src, alt: img.alt}));
       pdfTrimRuns(pr);
       if(pr.length) out.push({text: pr, margin: [0,0,0,8], alignment: getAlign(n) || undefined});
     } else if(tag === 'IMG'){
@@ -1085,18 +1214,28 @@ document.getElementById('downloadPdfBtn').addEventListener('click', async ()=>{
   btn.disabled = true;
   btn.textContent = 'Creating PDF…';
   try{
-    for(let i = 0; i < content.length; i++){
-      const item = content[i];
-      if(!item._img) continue;
-      const loaded = await pdfLoadImage(item._img);
-      if(loaded){
-        const width = Math.min(515, loaded.w);
-        content[i] = {image: loaded.data, width, margin: [0,4,0,10]};
-      } else {
-        // Host blocked the image: keep a clickable link to it instead of dropping it.
-        content[i] = {text: [{text: item.alt || 'Image', link: item._img, color: PDF_LINK_COLOR, decoration: 'underline'}], margin: [0,0,0,8]};
+    // Images can sit inside lists / quotes too, so resolve them at any depth.
+    const resolveImages = async (list)=>{
+      for(let i = 0; i < list.length; i++){
+        const item = list[i];
+        if(!item || typeof item !== 'object') continue;
+        if(item._img){
+          const loaded = await pdfLoadImage(item._img);
+          if(loaded){
+            const width = Math.min(515, loaded.w);
+            list[i] = {image: loaded.data, width, margin: [0,4,0,10]};
+          } else {
+            // Host blocked the image: keep a clickable link to it instead of dropping it.
+            list[i] = {text: [{text: item.alt || 'Image', link: item._img, color: PDF_LINK_COLOR, decoration: 'underline'}], margin: [0,0,0,8]};
+          }
+        } else {
+          for(const key of ['stack', 'ul', 'ol']){
+            if(Array.isArray(item[key])) await resolveImages(item[key]);
+          }
+        }
       }
-    }
+    };
+    await resolveImages(content);
     const first = content.find(c => c.fontSize);
     const title = first ? first.text.map(r => r.text).join('').trim() : '';
     const baseName = slugify(title) || 'article';
